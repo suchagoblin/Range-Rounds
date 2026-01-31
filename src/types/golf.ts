@@ -14,6 +14,9 @@ export type HazardType = 'Water' | 'Bunker' | null;
 export interface Profile {
   id: string;
   name: string;
+  wind_enabled: boolean;
+  wind_speed: number;
+  wind_direction: string;
   created_at: string;
   updated_at: string;
 }

@@ -99,7 +99,11 @@ export default function GameScreen({ onOpenProfile }: GameScreenProps) {
                 <span className="text-sm font-medium text-gray-600">Wind</span>
               </div>
               <span className="text-sm font-semibold text-gray-700">
-                {currentHole.windSpeed} mph {currentHole.windDir}
+                {currentHole.windSpeed === 0 || currentHole.windDir === 'None' ? (
+                  <span className="text-gray-400">Disabled</span>
+                ) : (
+                  `${currentHole.windSpeed} mph ${currentHole.windDir}`
+                )}
               </span>
             </div>
 

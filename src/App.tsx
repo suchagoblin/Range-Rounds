@@ -12,7 +12,7 @@ import CommunityLeaderboard from './components/CommunityLeaderboard';
 
 function App() {
   const { isAuthenticated, isLoading } = useAuth();
-  const { round, profile, clubs, updateProfile, addClub, updateClub, deleteClub, exitRound } = useGolf();
+  const { round, profile, clubs, updateProfile, updateWindSettings, addClub, updateClub, deleteClub, exitRound } = useGolf();
   const [showProfile, setShowProfile] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showCourses, setShowCourses] = useState(false);
@@ -36,7 +36,11 @@ function App() {
       <ProfileScreen
         profileName={profile?.name || 'Golfer'}
         clubs={clubs}
+        windEnabled={profile?.wind_enabled || false}
+        windSpeed={profile?.wind_speed || 10}
+        windDirection={profile?.wind_direction || 'Headwind'}
         onUpdateProfile={updateProfile}
+        onUpdateWindSettings={updateWindSettings}
         onAddClub={addClub}
         onUpdateClub={updateClub}
         onDeleteClub={deleteClub}
