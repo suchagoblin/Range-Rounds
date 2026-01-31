@@ -232,9 +232,9 @@ export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourse
           </div>
 
           <div className="relative">
-            <h1 className="text-5xl md:text-6xl font-black mb-3 tracking-tight leading-normal">
-              <span className="inline-block bg-gradient-to-r from-emerald-400 via-green-400 to-emerald-500 bg-clip-text text-transparent drop-shadow-[0_0_15px_rgba(16,185,129,0.5)]">
-                Range Rounds
+            <h1 className="text-6xl md:text-7xl mb-3 tracking-wide" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>
+              <span className="inline-block bg-gradient-to-r from-emerald-400 via-green-400 to-emerald-500 bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(16,185,129,0.6)]">
+                RANGE ROUNDS
               </span>
             </h1>
 
