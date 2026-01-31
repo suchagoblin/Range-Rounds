@@ -210,12 +210,54 @@ export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourse
   return (
     <div className="min-h-screen bg-topo flex items-center justify-center px-4 py-8">
       <div className="max-w-md w-full">
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl mb-5 glow-green">
-            <Flag className="w-10 h-10 text-white" />
+        <div className="text-center mb-10 relative">
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="w-96 h-96 bg-gradient-to-br from-emerald-500/10 via-green-500/5 to-teal-500/10 rounded-full blur-3xl animate-pulse"></div>
           </div>
-          <h1 className="text-4xl font-bold text-white mb-2 text-glow-green">Range Rounds</h1>
-          <p className="text-slate-400 text-base">Virtual Course Simulator</p>
+
+          <div className="absolute top-0 left-1/4 w-2 h-2 bg-emerald-400 rounded-full animate-ping"></div>
+          <div className="absolute top-10 right-1/4 w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse delay-100"></div>
+          <div className="absolute top-5 left-1/3 w-1 h-1 bg-teal-400 rounded-full animate-ping delay-200"></div>
+
+          <div className="relative inline-flex items-center justify-center mb-6 group">
+            <div className="absolute w-32 h-32 bg-gradient-to-br from-emerald-400/20 to-green-500/20 rounded-full blur-2xl group-hover:scale-110 transition-transform duration-500"></div>
+
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-400 to-green-600 rounded-2xl blur-md opacity-50 group-hover:opacity-70 transition-opacity"></div>
+              <div className="relative w-24 h-24 bg-gradient-to-br from-emerald-500 via-green-500 to-emerald-600 rounded-2xl glow-green transform group-hover:scale-105 group-hover:rotate-6 transition-all duration-300 border border-emerald-400/50">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-white/10 rounded-2xl"></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Flag className="w-12 h-12 text-white drop-shadow-lg" />
+                </div>
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-300 rounded-full animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+
+          <div className="relative">
+            <h1 className="text-5xl md:text-6xl font-black text-white mb-3 tracking-tight leading-tight text-glow-green">
+              <span className="inline-block bg-gradient-to-r from-emerald-400 via-green-400 to-emerald-500 bg-clip-text text-transparent animate-pulse-glow">
+                Range Rounds
+              </span>
+            </h1>
+
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <div className="h-px w-12 bg-gradient-to-r from-transparent via-emerald-400/50 to-transparent"></div>
+              <p className="text-slate-300 text-lg font-semibold tracking-wide">Virtual Course Simulator</p>
+              <div className="h-px w-12 bg-gradient-to-r from-transparent via-emerald-400/50 to-transparent"></div>
+            </div>
+
+            <div className="flex items-center justify-center gap-4 text-sm">
+              <div className="flex items-center gap-1.5 bg-slate-800/50 backdrop-blur-sm px-3 py-1.5 rounded-full border border-emerald-500/20">
+                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                <span className="text-slate-300 font-medium">Practice Anywhere</span>
+              </div>
+              <div className="flex items-center gap-1.5 bg-slate-800/50 backdrop-blur-sm px-3 py-1.5 rounded-full border border-blue-500/20">
+                <Users className="w-3.5 h-3.5 text-blue-400" />
+                <span className="text-slate-300 font-medium">Multiplayer Ready</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="bg-slate-800/80 backdrop-blur-sm rounded-3xl border border-slate-700 p-6 mb-6">
