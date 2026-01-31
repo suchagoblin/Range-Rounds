@@ -37,6 +37,12 @@ export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourse
   const [famousCourses, setFamousCourses] = useState<FamousCourse[]>([]);
   const [_isLoading, setIsLoading] = useState(false);
 
+  const getDefaultMulligans = (holes: 3 | 9 | 18): string => {
+    if (holes === 3) return '1';
+    if (holes === 9) return '2';
+    return '3';
+  };
+
   useEffect(() => {
     loadFamousCourses();
   }, []);
@@ -56,6 +62,7 @@ export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourse
   const handleSelectFamousCourse = (courseId: string) => {
     setPendingCourseId(courseId);
     setHoleCount(18);
+    setMulligans(getDefaultMulligans(18));
     setShowFamousCoursesDialog(false);
     setShowCompetitionDialog(true);
   };
@@ -146,6 +153,7 @@ export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourse
 
   const handleStartSoloRound = async (holes: 3 | 9 | 18) => {
     setHoleCount(holes);
+    setMulligans(getDefaultMulligans(holes));
     setShowCompetitionDialog(true);
   };
 
@@ -191,7 +199,9 @@ export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourse
 
         if (courseData && courseData[0]) {
           setPendingCourseId(courseId);
-          setHoleCount(courseData[0].hole_count);
+          const holes = courseData[0].hole_count as 3 | 9 | 18;
+          setHoleCount(holes);
+          setMulligans(getDefaultMulligans(holes));
           setShowMultiplayerDialog(false);
           setShowCompetitionDialog(true);
           showToast('Joined course successfully', 'success');
@@ -439,7 +449,11 @@ export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourse
                       {[3, 9, 18].map((count) => (
                         <button
                           key={count}
-                          onClick={() => setHoleCount(count as 3 | 9 | 18)}
+                          onClick={() => {
+                            const holes = count as 3 | 9 | 18;
+                            setHoleCount(holes);
+                            setMulligans(getDefaultMulligans(holes));
+                          }}
                           className={`py-3 rounded-lg font-semibold transition-all ${
                             holeCount === count
                               ? 'bg-purple-600 text-white shadow-lg'
