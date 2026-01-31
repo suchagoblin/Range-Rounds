@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1200, height=630">
+    <title>Range Rounds OG Image</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            width: 1200px;
+            height: 630px;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: system-ui, -apple-system, sans-serif;
+            position: relative;
+            overflow: hidden;
+        }
+        .particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(34, 197, 94, 0.3);
+            animation: float 20s infinite;
+        }
+        .particle:nth-child(1) { width: 80px; height: 80px; left: 10%; top: 15%; animation-delay: 0s; opacity: 0.4; }
+        .particle:nth-child(2) { width: 60px; height: 60px; right: 15%; top: 25%; animation-delay: 3s; opacity: 0.3; }
+        .particle:nth-child(3) { width: 40px; height: 40px; left: 25%; bottom: 20%; animation-delay: 6s; opacity: 0.5; }
+        .particle:nth-child(4) { width: 50px; height: 50px; right: 20%; bottom: 30%; animation-delay: 9s; opacity: 0.3; }
+        .particle:nth-child(5) { width: 30px; height: 30px; left: 45%; top: 10%; animation-delay: 12s; opacity: 0.4; }
+        .particle:nth-child(6) { width: 45px; height: 45px; right: 35%; top: 45%; animation-delay: 15s; opacity: 0.35; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); }
+            25% { transform: translateY(-20px) translateX(10px); }
+            50% { transform: translateY(-10px) translateX(-10px); }
+            75% { transform: translateY(-30px) translateX(5px); }
+        }
+
+        .content {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .logo-container {
+            position: relative;
+            width: 180px;
+            height: 180px;
+        }
+
+        .logo-glow {
+            position: absolute;
+            inset: -30px;
+            background: radial-gradient(circle, rgba(34, 197, 94, 0.4) 0%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(30px);
+        }
+
+        .logo {
+            position: relative;
+            width: 180px;
+            height: 180px;
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            border-radius: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 20px 60px rgba(34, 197, 94, 0.3);
+        }
+
+        .logo svg {
+            width: 100px;
+            height: 100px;
+            stroke: white;
+            stroke-width: 3;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 120px;
+            font-weight: 400;
+            letter-spacing: 8px;
+            background: linear-gradient(135deg, #22c55e 0%, #10b981 50%, #22c55e 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+            line-height: 1;
+            text-shadow: 0 0 40px rgba(34, 197, 94, 0.3);
+        }
+
+        .subtitle {
+            font-size: 32px;
+            color: #e2e8f0;
+            font-weight: 300;
+            letter-spacing: 2px;
+            text-align: center;
+            padding-top: 10px;
+            border-top: 2px solid rgba(34, 197, 94, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <div class="content">
+        <div class="logo-container">
+            <div class="logo-glow"></div>
+            <div class="logo">
+                <svg viewBox="0 0 24 24">
+                    <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+                    <line x1="4" y1="22" x2="4" y2="15"/>
+                </svg>
+            </div>
+        </div>
+
+        <div>
+            <h1 class="title">RANGE ROUNDS</h1>
+            <p class="subtitle">Virtual Course Simulator</p>
+        </div>
+    </div>
+</body>
+</html>
