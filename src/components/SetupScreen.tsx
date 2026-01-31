@@ -34,7 +34,7 @@ export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourse
   const [betAmount, setBetAmount] = useState('1');
   const [mulligans, setMulligans] = useState('2');
   const [famousCourses, setFamousCourses] = useState<FamousCourse[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [_isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     loadFamousCourses();
