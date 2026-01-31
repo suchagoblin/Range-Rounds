@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { ClubInBag, ClubName, ClubType, BestRound } from '../types/golf';
-import { Plus, Trash2, Save, User, Trophy } from 'lucide-react';
+import { Plus, Trash2, Save, User, Trophy, LogOut } from 'lucide-react';
 import { useGolf } from '../context/GolfContext';
+import { useAuth } from '../context/AuthContext';
 
 interface ProfileScreenProps {
   profileName: string;
@@ -32,6 +33,7 @@ export default function ProfileScreen({
   onBack
 }: ProfileScreenProps) {
   const { getBestRounds } = useGolf();
+  const { logout, username } = useAuth();
   const [name, setName] = useState(profileName);
   const [isAddingClub, setIsAddingClub] = useState(false);
   const [selectedType, setSelectedType] = useState<ClubType>('Driver');
@@ -103,9 +105,18 @@ export default function ProfileScreen({
             </button>
           </div>
 
+          <div className="mb-4">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Username
+            </label>
+            <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-700 font-medium">
+              @{username}
+            </div>
+          </div>
+
           <div className="mb-6">
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Player Name
+              Display Name
             </label>
             <div className="flex gap-2">
               <input
@@ -124,6 +135,14 @@ export default function ProfileScreen({
               </button>
             </div>
           </div>
+
+          <button
+            onClick={logout}
+            className="w-full px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors flex items-center justify-center gap-2 font-medium"
+          >
+            <LogOut className="w-4 h-4" />
+            Sign Out
+          </button>
         </div>
 
         {bestRounds.length > 0 && (

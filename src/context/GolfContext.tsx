@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { Round, Hole, Shot, ClubName, Direction, Profile, ClubInBag, ClubType, BestRound, GameType, Competition } from '../types/golf';
 import { calculateShotResult, generateHoles } from '../utils/golfLogic';
 import { supabase } from '../lib/supabase';
+import { useAuth } from './AuthContext';
 
 interface GolfContextType {
   round: Round | null;
@@ -55,6 +56,7 @@ export interface RoundStats {
 const GolfContext = createContext<GolfContextType | undefined>(undefined);
 
 export function GolfProvider({ children }: { children: ReactNode }) {
+  const { profileId } = useAuth();
   const [round, setRound] = useState<Round | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [clubs, setClubs] = useState<ClubInBag[]>([]);
@@ -62,8 +64,10 @@ export function GolfProvider({ children }: { children: ReactNode }) {
   const [currentCourseId, setCurrentCourseId] = useState<string | null>(null);
 
   useEffect(() => {
-    loadProfile();
-  }, []);
+    if (profileId) {
+      loadProfile();
+    }
+  }, [profileId]);
 
   const createDefaultClubs = async (profileId: string) => {
     const defaultClubs = [
@@ -98,14 +102,15 @@ export function GolfProvider({ children }: { children: ReactNode }) {
   };
 
   const loadProfile = async () => {
-    const { data: profiles } = await supabase
+    if (!profileId) return;
+
+    const { data: loadedProfile } = await supabase
       .from('profiles')
       .select('*')
-      .order('created_at', { ascending: false })
-      .limit(1);
+      .eq('id', profileId)
+      .maybeSingle();
 
-    if (profiles && profiles.length > 0) {
-      const loadedProfile = profiles[0];
+    if (loadedProfile) {
       setProfile(loadedProfile);
 
       const { data: clubsData } = await supabase
@@ -118,18 +123,6 @@ export function GolfProvider({ children }: { children: ReactNode }) {
         setClubs(clubsData);
       } else {
         const defaultClubs = await createDefaultClubs(loadedProfile.id);
-        setClubs(defaultClubs);
-      }
-    } else {
-      const { data: newProfile } = await supabase
-        .from('profiles')
-        .insert({ name: 'Golfer' })
-        .select()
-        .single();
-
-      if (newProfile) {
-        setProfile(newProfile);
-        const defaultClubs = await createDefaultClubs(newProfile.id);
         setClubs(defaultClubs);
       }
     }

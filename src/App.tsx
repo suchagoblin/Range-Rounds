@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { useAuth } from './context/AuthContext';
 import { useGolf } from './context/GolfContext';
+import { AuthScreen } from './components/AuthScreen';
 import SetupScreen from './components/SetupScreen';
 import GameScreen from './components/GameScreen';
 import ProfileScreen from './components/ProfileScreen';
@@ -8,11 +10,24 @@ import CourseManager from './components/CourseManager';
 import RoundSummary from './components/RoundSummary';
 
 function App() {
+  const { isAuthenticated, isLoading } = useAuth();
   const { round, profile, clubs, updateProfile, addClub, updateClub, deleteClub, exitRound } = useGolf();
   const [showProfile, setShowProfile] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showCourses, setShowCourses] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center">
+        <div className="text-xl font-semibold text-gray-600">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <AuthScreen />;
+  }
 
   if (showProfile) {
     return (
