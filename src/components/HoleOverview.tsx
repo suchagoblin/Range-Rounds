@@ -58,24 +58,10 @@ export default function HoleOverview({ hole, currentDistance }: HoleOverviewProp
             >
               <div className="relative">
                 <div className="golf-ball">
-                  <div className="golf-ball-inner">
-                    <div className="dimple" style={{ top: '15%', left: '25%' }}></div>
-                    <div className="dimple" style={{ top: '15%', right: '25%' }}></div>
-                    <div className="dimple" style={{ top: '15%', left: '50%', transform: 'translateX(-50%)' }}></div>
-                    <div className="dimple" style={{ top: '35%', left: '15%' }}></div>
-                    <div className="dimple" style={{ top: '35%', right: '15%' }}></div>
-                    <div className="dimple" style={{ top: '35%', left: '40%' }}></div>
-                    <div className="dimple" style={{ top: '35%', right: '40%' }}></div>
-                    <div className="dimple" style={{ top: '50%', left: '30%' }}></div>
-                    <div className="dimple" style={{ top: '50%', right: '30%' }}></div>
-                    <div className="dimple" style={{ top: '50%', left: '50%', transform: 'translateX(-50%)' }}></div>
-                    <div className="dimple" style={{ top: '65%', left: '15%' }}></div>
-                    <div className="dimple" style={{ top: '65%', right: '15%' }}></div>
-                    <div className="dimple" style={{ top: '65%', left: '40%' }}></div>
-                    <div className="dimple" style={{ top: '65%', right: '40%' }}></div>
-                    <div className="dimple" style={{ bottom: '15%', left: '25%' }}></div>
-                    <div className="dimple" style={{ bottom: '15%', right: '25%' }}></div>
-                    <div className="dimple" style={{ bottom: '15%', left: '50%', transform: 'translateX(-50%)' }}></div>
+                  <div className="golf-ball-inner flex items-center justify-center">
+                    <div className="text-[5px] font-bold text-gray-600 leading-tight text-center uppercase tracking-tight" style={{ transform: 'rotate(-15deg)' }}>
+                      range<br/>rounds
+                    </div>
                   </div>
                 </div>
                 <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap">
