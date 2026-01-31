@@ -153,7 +153,10 @@ export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourse
       }).then(r => r.json());
 
       if (courseData && courseData[0]) {
-        await startRound(courseData[0].hole_count, courseId);
+        setPendingCourseId(courseId);
+        setHoleCount(courseData[0].hole_count);
+        setShowMultiplayerDialog(false);
+        setShowCompetitionDialog(true);
       }
     } else {
       alert('Invalid code. Please check and try again.');

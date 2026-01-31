@@ -25,6 +25,9 @@ export default function CourseManager({ onBack }: CourseManagerProps) {
   const [joinCode, setJoinCode] = useState('');
   const [shareCode, setShareCode] = useState<string | null>(null);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [showPlayDialog, setShowPlayDialog] = useState(false);
+  const [courseToPlay, setCourseToPlay] = useState<{ id: string; holeCount: number } | null>(null);
+  const [mulligans, setMulligans] = useState('2');
 
   useEffect(() => {
     loadCourses();
@@ -66,8 +69,17 @@ export default function CourseManager({ onBack }: CourseManagerProps) {
     }
   };
 
-  const handlePlayCourse = async (courseId: string, holeCount: number) => {
-    await startRound(holeCount as 3 | 9 | 18, courseId);
+  const handlePlayCourse = (courseId: string, holeCount: number) => {
+    setCourseToPlay({ id: courseId, holeCount });
+    setShowPlayDialog(true);
+  };
+
+  const handleConfirmPlay = async () => {
+    if (!courseToPlay) return;
+    const mulliganCount = parseInt(mulligans) || 0;
+    await startRound(courseToPlay.holeCount as 3 | 9 | 18, courseToPlay.id, mulliganCount);
+    setShowPlayDialog(false);
+    setCourseToPlay(null);
   };
 
   const formatDate = (dateString: string) => {
@@ -268,6 +280,49 @@ export default function CourseManager({ onBack }: CourseManagerProps) {
             courseName={selectedCourse.name}
             onClose={() => setSelectedCourse(null)}
           />
+        )}
+
+        {showPlayDialog && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-gray-800">Round Options</h2>
+                <button
+                  onClick={() => {
+                    setShowPlayDialog(false);
+                    setCourseToPlay(null);
+                  }}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-600" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Mulligans Allowed
+                  </label>
+                  <input
+                    type="number"
+                    value={mulligans}
+                    onChange={(e) => setMulligans(e.target.value)}
+                    min="0"
+                    max="5"
+                    className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Do-overs allowed during the round</p>
+                </div>
+
+                <button
+                  onClick={handleConfirmPlay}
+                  className="w-full py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors"
+                >
+                  Start Round
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>
