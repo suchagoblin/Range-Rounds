@@ -547,40 +547,14 @@ export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourse
                     >
                       Stroke Play (No Betting)
                     </button>
-                    <button
-                      onClick={() => setGameType('skins')}
-                      className={`w-full py-3 rounded-lg font-semibold transition-all ${
-                        gameType === 'skins'
-                          ? 'bg-amber-500 text-white border border-amber-400 glow-amber'
-                          : 'bg-slate-700 text-slate-300 hover:bg-slate-600 border border-slate-600'
-                      }`}
-                    >
-                      <div className="flex items-center justify-center gap-2">
-                        <DollarSign className="w-4 h-4" />
-                        Skins
-                      </div>
-                    </button>
-                    <button
-                      onClick={() => setGameType('nassau')}
-                      className={`w-full py-3 rounded-lg font-semibold transition-all ${
-                        gameType === 'nassau'
-                          ? 'bg-blue-500 text-white border border-blue-400 glow-blue'
-                          : 'bg-slate-700 text-slate-300 hover:bg-slate-600 border border-slate-600'
-                      }`}
-                    >
-                      <div className="flex items-center justify-center gap-2">
-                        <DollarSign className="w-4 h-4" />
-                        Nassau
-                      </div>
-                    </button>
                     {isMultiplayerRound && (
                       <>
                         <button
                           onClick={() => setGameType('skins')}
                           className={`w-full py-3 rounded-lg font-semibold transition-all ${
                             gameType === 'skins'
-                              ? 'bg-yellow-600 text-white shadow-lg'
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                              ? 'bg-amber-500 text-white border border-amber-400 glow-amber'
+                              : 'bg-slate-700 text-slate-300 hover:bg-slate-600 border border-slate-600'
                           }`}
                         >
                           <div className="flex items-center justify-center gap-2">
@@ -592,8 +566,8 @@ export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourse
                           onClick={() => setGameType('nassau')}
                           className={`w-full py-3 rounded-lg font-semibold transition-all ${
                             gameType === 'nassau'
-                              ? 'bg-blue-600 text-white shadow-lg'
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                              ? 'bg-blue-500 text-white border border-blue-400 glow-blue'
+                              : 'bg-slate-700 text-slate-300 hover:bg-slate-600 border border-slate-600'
                           }`}
                         >
                           <div className="flex items-center justify-center gap-2">

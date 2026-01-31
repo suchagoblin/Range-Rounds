@@ -116,9 +116,6 @@ export default function GameScreen({ onOpenProfile }: GameScreenProps) {
               <span className="text-sm font-semibold text-slate-300">
                 {currentHole.windSpeed === 0 || currentHole.windDir === 'None' ? (
                   <span className="text-slate-500">Disabled</span>
-              <span className="text-sm font-semibold text-gray-700">
-                {currentHole.windSpeed === 0 || currentHole.windDir === 'None' ? (
-                  <span className="text-gray-400">Disabled</span>
                 ) : (
                   `${currentHole.windSpeed} mph ${currentHole.windDir}`
                 )}
@@ -239,7 +236,7 @@ export default function GameScreen({ onOpenProfile }: GameScreenProps) {
 
         <button
           onClick={() => setShowEndRoundDialog(true)}
-          className="mt-6 w-full py-3 bg-white border-2 border-red-200 rounded-2xl font-semibold text-red-600 hover:bg-red-50 hover:border-red-300 transition-all flex items-center justify-center gap-2 shadow-sm"
+          className="mt-6 w-full py-3 bg-slate-800 border border-red-500/30 rounded-2xl font-semibold text-red-400 hover:bg-slate-700 hover:border-red-500/50 transition-all flex items-center justify-center gap-2"
         >
           <XCircle className="w-5 h-5" />
           End Round
@@ -247,42 +244,42 @@ export default function GameScreen({ onOpenProfile }: GameScreenProps) {
       </div>
 
       {showEndRoundDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-800 rounded-2xl border border-slate-700 p-6 max-w-md w-full">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold text-gray-800">End Round</h2>
+              <h2 className="text-2xl font-bold text-white">End Round</h2>
               <button
                 onClick={() => setShowEndRoundDialog(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
               >
-                <X className="w-5 h-5 text-gray-600" />
+                <X className="w-5 h-5 text-slate-400" />
               </button>
             </div>
 
-            <p className="text-gray-600 mb-6">
+            <p className="text-slate-400 mb-6">
               Would you like to save this round or discard it?
             </p>
 
             <div className="space-y-3">
               <button
                 onClick={handleSaveRound}
-                className="w-full py-4 bg-gradient-to-br from-emerald-500 to-emerald-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                className="w-full py-4 bg-gradient-to-br from-emerald-500 to-emerald-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2 border border-emerald-400 glow-green"
               >
                 <Save className="w-5 h-5" />
                 Save Round
               </button>
-              <p className="text-xs text-gray-500 text-center -mt-2 mb-4">
+              <p className="text-xs text-slate-500 text-center -mt-2 mb-4">
                 Resume this round later from your history
               </p>
 
               <button
                 onClick={handleDiscardRound}
-                className="w-full py-4 bg-gradient-to-br from-red-500 to-red-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                className="w-full py-4 bg-gradient-to-br from-red-500 to-red-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2 border border-red-400"
               >
                 <XCircle className="w-5 h-5" />
                 Discard Round
               </button>
-              <p className="text-xs text-gray-500 text-center -mt-2">
+              <p className="text-xs text-slate-500 text-center -mt-2">
                 Permanently delete this round
               </p>
             </div>

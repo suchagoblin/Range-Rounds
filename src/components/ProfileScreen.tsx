@@ -161,22 +161,22 @@ export default function ProfileScreen({
           </button>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+        <div className="bg-slate-800/80 backdrop-blur-sm rounded-2xl border border-slate-700 p-6 mb-6">
           <div className="flex items-center gap-2 mb-4">
-            <Wind className="w-6 h-6 text-sky-600" />
-            <h2 className="text-xl font-bold text-gray-800">Wind Settings</h2>
+            <Wind className="w-6 h-6 text-sky-400" />
+            <h2 className="text-xl font-bold text-white">Wind Settings</h2>
           </div>
 
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg border border-slate-600">
               <div>
-                <div className="font-semibold text-gray-800">Enable Wind</div>
-                <div className="text-sm text-gray-600">Apply wind effects during gameplay</div>
+                <div className="font-semibold text-white">Enable Wind</div>
+                <div className="text-sm text-slate-400">Apply wind effects during gameplay</div>
               </div>
               <button
                 onClick={() => setLocalWindEnabled(!localWindEnabled)}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  localWindEnabled ? 'bg-green-600' : 'bg-gray-300'
+                  localWindEnabled ? 'bg-emerald-500' : 'bg-slate-600'
                 }`}
               >
                 <span
@@ -188,44 +188,44 @@ export default function ProfileScreen({
             </div>
 
             {localWindEnabled && (
-              <div className="space-y-3 p-4 bg-sky-50 rounded-lg border border-sky-200">
+              <div className="space-y-3 p-4 bg-sky-500/10 rounded-lg border border-sky-500/30">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-slate-300 mb-2">
                     Wind Speed (mph)
                   </label>
                   <input
                     type="number"
                     value={localWindSpeed}
                     onChange={(e) => setLocalWindSpeed(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500"
+                    className="w-full px-3 py-2 bg-slate-900 border-2 border-slate-600 rounded-lg text-white focus:border-sky-500 focus:outline-none"
                     min="0"
                     max="50"
                   />
-                  <p className="text-xs text-gray-600 mt-1">Set to your current real-life wind speed</p>
+                  <p className="text-xs text-slate-500 mt-1">Set to your current real-life wind speed</p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-slate-300 mb-2">
                     Wind Direction
                   </label>
                   <select
                     value={localWindDirection}
                     onChange={(e) => setLocalWindDirection(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500"
+                    className="w-full px-3 py-2 bg-slate-900 border-2 border-slate-600 rounded-lg text-white focus:border-sky-500 focus:outline-none"
                   >
                     <option value="Headwind">Headwind (into you)</option>
                     <option value="Tailwind">Tailwind (behind you)</option>
                     <option value="Left-to-Right">Left-to-Right (crosswind)</option>
                     <option value="Right-to-Left">Right-to-Left (crosswind)</option>
                   </select>
-                  <p className="text-xs text-gray-600 mt-1">Set to match your actual playing conditions</p>
+                  <p className="text-xs text-slate-500 mt-1">Set to match your actual playing conditions</p>
                 </div>
               </div>
             )}
 
             <button
               onClick={handleSaveWindSettings}
-              className="w-full px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-colors flex items-center justify-center gap-2 font-medium"
+              className="w-full px-4 py-2 bg-gradient-to-br from-sky-500 to-sky-600 text-white rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2 font-medium border border-sky-400"
             >
               <Save className="w-4 h-4" />
               Save Wind Settings
