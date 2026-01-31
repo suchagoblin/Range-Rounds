@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Lock, User, UserPlus } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { validateUsername, validateName, validatePin } from '../utils/validation';
 
 export function AuthScreen() {
   const { login, signup } = useAuth();
@@ -12,7 +13,7 @@ export function AuthScreen() {
   const [isLoading, setIsLoading] = useState(false);
 
   const handlePinInput = (digit: string) => {
-    if (pin.length < 4) {
+    if (pin.length < 6) {
       setPin(pin + digit);
       setError('');
     }
@@ -24,19 +25,24 @@ export function AuthScreen() {
   };
 
   const handleSubmit = async () => {
-    if (username.length < 3) {
-      setError('Username must be at least 3 characters');
+    const usernameValidation = validateUsername(username);
+    if (!usernameValidation.valid) {
+      setError(usernameValidation.error || 'Invalid username');
       return;
     }
 
-    if (pin.length !== 4) {
-      setError('Please enter a 4-digit PIN');
+    const pinValidation = validatePin(pin);
+    if (!pinValidation.valid) {
+      setError(pinValidation.error || 'Invalid PIN');
       return;
     }
 
-    if (isSignup && name.length < 2) {
-      setError('Please enter your name');
-      return;
+    if (isSignup) {
+      const nameValidation = validateName(name);
+      if (!nameValidation.valid) {
+        setError(nameValidation.error || 'Invalid name');
+        return;
+      }
     }
 
     setIsLoading(true);
@@ -52,8 +58,9 @@ export function AuthScreen() {
         setPin('');
       }
     } catch (err) {
-      setError('Authentication failed');
+      setError('An unexpected error occurred. Please try again.');
       setPin('');
+      console.error('Auth error:', err);
     } finally {
       setIsLoading(false);
     }
@@ -125,16 +132,22 @@ export function AuthScreen() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              4-Digit PIN
+              PIN (4-6 digits)
             </label>
             <div className="flex gap-2 mb-4 justify-center">
-              {[0, 1, 2, 3].map((i) => (
+              {[0, 1, 2, 3, 4, 5].map((i) => (
                 <div
                   key={i}
-                  className="w-14 h-14 border-2 border-gray-300 rounded-lg flex items-center justify-center bg-gray-50"
+                  className={`w-12 h-12 border-2 rounded-lg flex items-center justify-center transition-colors ${
+                    pin[i]
+                      ? 'border-green-500 bg-green-50'
+                      : i < 4
+                      ? 'border-gray-300 bg-gray-50'
+                      : 'border-gray-200 bg-gray-100'
+                  }`}
                 >
                   {pin[i] && (
-                    <Lock className="w-6 h-6 text-green-600" />
+                    <Lock className="w-5 h-5 text-green-600" />
                   )}
                 </div>
               ))}
@@ -145,7 +158,7 @@ export function AuthScreen() {
                 <button
                   key={digit}
                   onClick={() => handlePinInput(digit.toString())}
-                  disabled={isLoading || pin.length >= 4}
+                  disabled={isLoading || pin.length >= 6}
                   className="h-14 bg-gray-100 hover:bg-gray-200 rounded-lg font-semibold text-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {digit}
@@ -160,17 +173,17 @@ export function AuthScreen() {
               </button>
               <button
                 onClick={() => handlePinInput('0')}
-                disabled={isLoading || pin.length >= 4}
+                disabled={isLoading || pin.length >= 6}
                 className="h-14 bg-gray-100 hover:bg-gray-200 rounded-lg font-semibold text-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 0
               </button>
               <button
                 onClick={handleSubmit}
-                disabled={isLoading || pin.length !== 4 || !username}
+                disabled={isLoading || pin.length < 4 || !username || (isSignup && !name)}
                 className="h-14 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                ✓
+                {isLoading ? '...' : '✓'}
               </button>
             </div>
           </div>

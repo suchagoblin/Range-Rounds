@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useGolf } from '../context/GolfContext';
 import { ClubName, Direction } from '../types/golf';
 import { Send, Target } from 'lucide-react';
+import { validateDistance } from '../utils/validation';
+import { showToast } from '../utils/toast';
 
 const DIRECTIONS: Direction[] = ['Wide Left', 'Left', 'Middle', 'Right', 'Wide Right'];
 
@@ -33,21 +35,28 @@ export default function ShotInput({ currentDistance }: ShotInputProps) {
     finishHole(putts);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!selectedClub) {
-      alert('Please select a club');
+      showToast('Please select a club', 'error');
       return;
     }
 
     const dist = parseInt(distance);
-    if (isNaN(dist) || dist <= 0) {
-      alert('Please enter a valid distance');
+    const validation = validateDistance(dist);
+    if (!validation.valid) {
+      showToast(validation.error || 'Invalid distance', 'error');
       return;
     }
 
-    recordShot(selectedClub, dist, selectedDirection);
-    setDistance('');
-    setSelectedDirection('Middle');
+    try {
+      await recordShot(selectedClub, dist, selectedDirection);
+      setDistance('');
+      setSelectedDirection('Middle');
+      showToast('Shot recorded', 'success');
+    } catch (error) {
+      showToast('Failed to record shot', 'error');
+      console.error('Error recording shot:', error);
+    }
   };
 
   if (isAutoPuttMode) {

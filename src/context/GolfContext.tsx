@@ -3,6 +3,8 @@ import { Round, Hole, Shot, ClubName, Direction, Profile, ClubInBag, ClubType, B
 import { calculateShotResult, generateHoles } from '../utils/golfLogic';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './AuthContext';
+import { saveRoundOffline, clearOfflineRound, isOnline } from '../utils/offlineStorage';
+import { showToast } from '../utils/toast';
 
 interface GolfContextType {
   round: Round | null;
@@ -326,36 +328,49 @@ export function GolfProvider({ children }: { children: ReactNode }) {
       hitHazard: shotResult.hitHazard,
     };
 
-    const { data: holesData } = await supabase
-      .from('holes')
-      .select('id')
-      .eq('round_id', currentRoundId)
-      .eq('hole_number', currentHole.number)
-      .single();
-
-    if (holesData) {
-      await supabase.from('shots').insert({
-        hole_id: holesData.id,
-        shot_order: currentHole.shots.length,
-        club,
-        input_distance: distance,
-        input_direction: direction,
-        penalty_strokes: shotResult.penaltyStrokes,
-        final_distance: shotResult.finalDistance,
-        remaining_distance: shotResult.remainingDistance,
-        distance_penalty: shotResult.distancePenalty,
-        hit_hazard: shotResult.hitHazard,
-      });
-    }
-
-    setRound({
+    const updatedRound = {
       ...round,
       holes: round.holes.map((hole, idx) =>
         idx === round.currentHoleIndex
           ? { ...hole, shots: [...hole.shots, newShot] }
           : hole
       ),
-    });
+    };
+
+    setRound(updatedRound);
+
+    try {
+      if (isOnline()) {
+        const { data: holesData } = await supabase
+          .from('holes')
+          .select('id')
+          .eq('round_id', currentRoundId)
+          .eq('hole_number', currentHole.number)
+          .single();
+
+        if (holesData) {
+          await supabase.from('shots').insert({
+            hole_id: holesData.id,
+            shot_order: currentHole.shots.length,
+            club,
+            input_distance: distance,
+            input_direction: direction,
+            penalty_strokes: shotResult.penaltyStrokes,
+            final_distance: shotResult.finalDistance,
+            remaining_distance: shotResult.remainingDistance,
+            distance_penalty: shotResult.distancePenalty,
+            hit_hazard: shotResult.hitHazard,
+          });
+        }
+      } else {
+        saveRoundOffline(updatedRound, currentRoundId);
+        showToast('Offline: Shot saved locally', 'info');
+      }
+    } catch (error) {
+      saveRoundOffline(updatedRound, currentRoundId);
+      showToast('Error syncing: Shot saved locally', 'info');
+      console.error('Error recording shot:', error);
+    }
   };
 
   const undoLastShot = async () => {
@@ -448,20 +463,6 @@ export function GolfProvider({ children }: { children: ReactNode }) {
     const currentHole = getCurrentHole();
     if (!currentHole || currentHole.isComplete) return;
 
-    const { data: holesData } = await supabase
-      .from('holes')
-      .select('id')
-      .eq('round_id', currentRoundId)
-      .eq('hole_number', currentHole.number)
-      .single();
-
-    if (holesData) {
-      await supabase
-        .from('holes')
-        .update({ putts, is_complete: true })
-        .eq('id', holesData.id);
-    }
-
     const updatedHoles = round.holes.map((hole, idx) =>
       idx === round.currentHoleIndex
         ? { ...hole, putts, isComplete: true }
@@ -485,23 +486,60 @@ export function GolfProvider({ children }: { children: ReactNode }) {
       totalScore = totalStrokes;
     }
 
-    await supabase
-      .from('rounds')
-      .update({
-        current_hole_index: isRoundComplete ? round.currentHoleIndex : nextHoleIndex,
-        is_round_complete: isRoundComplete,
-        total_score: totalScore,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', currentRoundId);
-
-    setRound({
+    const updatedRound = {
       ...round,
       holes: updatedHoles,
       currentHoleIndex: isRoundComplete ? round.currentHoleIndex : nextHoleIndex,
       isRoundComplete,
-      totalScore,
-    });
+    };
+
+    setRound(updatedRound);
+
+    try {
+      if (isOnline()) {
+        const { data: holesData } = await supabase
+          .from('holes')
+          .select('id')
+          .eq('round_id', currentRoundId)
+          .eq('hole_number', currentHole.number)
+          .single();
+
+        if (holesData) {
+          await supabase
+            .from('holes')
+            .update({ putts, is_complete: true })
+            .eq('id', holesData.id);
+        }
+
+        await supabase
+          .from('rounds')
+          .update({
+            current_hole_index: isRoundComplete ? round.currentHoleIndex : nextHoleIndex,
+            is_round_complete: isRoundComplete,
+            total_score: totalScore,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', currentRoundId);
+
+        if (isRoundComplete) {
+          clearOfflineRound();
+        }
+      } else {
+        saveRoundOffline(updatedRound, currentRoundId);
+        showToast('Offline: Hole saved locally', 'info');
+      }
+    } catch (error) {
+      saveRoundOffline(updatedRound, currentRoundId);
+      showToast('Error syncing: Data saved locally', 'info');
+      console.error('Error finishing hole:', error);
+    }
+
+    if (isRoundComplete) {
+      setRound({
+        ...updatedRound,
+        totalScore,
+      });
+    }
   };
 
   const skipHole = async () => {

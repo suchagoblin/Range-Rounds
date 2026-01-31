@@ -4,6 +4,8 @@ import { Flag, Wind, User, History, BookOpen, Users, X, DollarSign, Trophy } fro
 import { generateHoles } from '../utils/golfLogic';
 import { supabase } from '../lib/supabase';
 import { GameType } from '../types/golf';
+import { showToast } from '../utils/toast';
+import { validateCourseName, validateShareCode } from '../utils/validation';
 
 interface SetupScreenProps {
   onOpenProfile: () => void;
@@ -32,6 +34,7 @@ export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourse
   const [betAmount, setBetAmount] = useState('1');
   const [mulligans, setMulligans] = useState('2');
   const [famousCourses, setFamousCourses] = useState<FamousCourse[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     loadFamousCourses();
@@ -57,65 +60,86 @@ export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourse
   };
 
   const handleCreateMultiplayer = async () => {
-    if (!courseName.trim()) {
-      alert('Please enter a course name');
+    const validation = validateCourseName(courseName);
+    if (!validation.valid) {
+      showToast(validation.error || 'Invalid course name', 'error');
       return;
     }
 
     if (!profile) {
-      alert('Profile not loaded');
+      showToast('Profile not loaded', 'error');
       return;
     }
 
-    const holes = generateHoles(holeCount);
+    setIsLoading(true);
+    try {
+      const holes = generateHoles(holeCount);
 
-    const { data: course } = await supabase
-      .from('courses')
-      .insert({
-        profile_id: profile.id,
-        name: courseName,
-        hole_count: holeCount,
-        is_shared: false,
-      })
-      .select()
-      .single();
+      const { data: course, error } = await supabase
+        .from('courses')
+        .insert({
+          profile_id: profile.id,
+          name: courseName,
+          hole_count: holeCount,
+          is_shared: false,
+        })
+        .select()
+        .single();
 
-    if (course) {
-      const courseHolesData = holes.map((hole) => ({
-        course_id: course.id,
-        hole_number: hole.number,
-        par: hole.par,
-        yardage: hole.yardage,
-        hazard: hole.hazard,
-        hazard_type: hole.hazardType,
-        wind_speed: hole.windSpeed,
-        wind_dir: hole.windDir,
-      }));
+      if (error) throw error;
 
-      await supabase.from('course_holes').insert(courseHolesData);
+      if (course) {
+        const courseHolesData = holes.map((hole) => ({
+          course_id: course.id,
+          hole_number: hole.number,
+          par: hole.par,
+          yardage: hole.yardage,
+          hazard: hole.hazard,
+          hazard_type: hole.hazardType,
+          wind_speed: hole.windSpeed,
+          wind_dir: hole.windDir,
+        }));
 
-      const code = await shareCourse(course.id);
-      if (code) {
-        setPendingCourseId(course.id);
-        setShareCode(code);
+        await supabase.from('course_holes').insert(courseHolesData);
+
+        const code = await shareCourse(course.id);
+        if (code) {
+          setPendingCourseId(course.id);
+          setShareCode(code);
+          showToast('Course created successfully', 'success');
+        }
       }
+    } catch (error) {
+      showToast('Failed to create course', 'error');
+      console.error('Error creating course:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleStartPlaying = async () => {
     if (pendingCourseId && holeCount) {
-      const mulliganCount = parseInt(mulligans) || 2;
-      await startRound(holeCount, pendingCourseId, mulliganCount);
+      setIsLoading(true);
+      try {
+        const mulliganCount = parseInt(mulligans) || 2;
+        await startRound(holeCount, pendingCourseId, mulliganCount);
 
-      if (gameType !== 'stroke_play') {
-        const bet = parseFloat(betAmount) || 1;
-        await addCompetition(gameType, bet);
+        if (gameType !== 'stroke_play') {
+          const bet = parseFloat(betAmount) || 1;
+          await addCompetition(gameType, bet);
+        }
+
+        setShowMultiplayerDialog(false);
+        setMultiplayerMode(null);
+        setShareCode(null);
+        setPendingCourseId(null);
+        showToast('Round started', 'success');
+      } catch (error) {
+        showToast('Failed to start round', 'error');
+        console.error('Error starting round:', error);
+      } finally {
+        setIsLoading(false);
       }
-
-      setShowMultiplayerDialog(false);
-      setMultiplayerMode(null);
-      setShareCode(null);
-      setPendingCourseId(null);
     }
   };
 
@@ -125,41 +149,60 @@ export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourse
   };
 
   const handleConfirmSoloStart = async () => {
-    const mulliganCount = parseInt(mulligans) || 2;
-    await startRound(holeCount, pendingCourseId || undefined, mulliganCount);
+    setIsLoading(true);
+    try {
+      const mulliganCount = parseInt(mulligans) || 2;
+      await startRound(holeCount, pendingCourseId || undefined, mulliganCount);
 
-    if (gameType !== 'stroke_play') {
-      const bet = parseFloat(betAmount) || 1;
-      await addCompetition(gameType, bet);
+      if (gameType !== 'stroke_play') {
+        const bet = parseFloat(betAmount) || 1;
+        await addCompetition(gameType, bet);
+      }
+
+      setShowCompetitionDialog(false);
+      setPendingCourseId(null);
+      showToast('Round started', 'success');
+    } catch (error) {
+      showToast('Failed to start round', 'error');
+      console.error('Error starting round:', error);
+    } finally {
+      setIsLoading(false);
     }
-
-    setShowCompetitionDialog(false);
-    setPendingCourseId(null);
   };
 
   const handleJoinMultiplayer = async () => {
-    if (joinCode.length !== 6) {
-      alert('Please enter a 6-character code');
+    const validation = validateShareCode(joinCode);
+    if (!validation.valid) {
+      showToast(validation.error || 'Invalid share code', 'error');
       return;
     }
 
-    const courseId = await joinSharedCourse(joinCode.toUpperCase());
-    if (courseId) {
-      const courseData = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/courses?id=eq.${courseId}`, {
-        headers: {
-          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
-        }
-      }).then(r => r.json());
+    setIsLoading(true);
+    try {
+      const courseId = await joinSharedCourse(joinCode.toUpperCase());
+      if (courseId) {
+        const courseData = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/courses?id=eq.${courseId}`, {
+          headers: {
+            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+          }
+        }).then(r => r.json());
 
-      if (courseData && courseData[0]) {
-        setPendingCourseId(courseId);
-        setHoleCount(courseData[0].hole_count);
-        setShowMultiplayerDialog(false);
-        setShowCompetitionDialog(true);
+        if (courseData && courseData[0]) {
+          setPendingCourseId(courseId);
+          setHoleCount(courseData[0].hole_count);
+          setShowMultiplayerDialog(false);
+          setShowCompetitionDialog(true);
+          showToast('Joined course successfully', 'success');
+        }
+      } else {
+        showToast('Invalid code. Please check and try again.', 'error');
       }
-    } else {
-      alert('Invalid code. Please check and try again.');
+    } catch (error) {
+      showToast('Failed to join course', 'error');
+      console.error('Error joining course:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 

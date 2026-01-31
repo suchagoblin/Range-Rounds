@@ -1,5 +1,6 @@
 import { useGolf } from '../context/GolfContext';
 import { Flag } from 'lucide-react';
+import { showToast } from '../utils/toast';
 
 export default function PuttingScreen() {
   const { getCurrentHole, finishHole, undoLastShot } = useGolf();
@@ -9,8 +10,14 @@ export default function PuttingScreen() {
 
   const totalShots = currentHole.shots.reduce((sum, shot) => sum + 1 + shot.penaltyStrokes, 0);
 
-  const handlePutts = (putts: number) => {
-    finishHole(putts);
+  const handlePutts = async (putts: number) => {
+    try {
+      await finishHole(putts);
+      showToast('Hole completed', 'success');
+    } catch (error) {
+      showToast('Failed to finish hole', 'error');
+      console.error('Error finishing hole:', error);
+    }
   };
 
   return (
