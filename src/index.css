@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    @apply antialiased;
+    @apply antialiased bg-slate-900;
   }
 
   *::-webkit-scrollbar {
@@ -16,18 +16,41 @@
   }
 
   *::-webkit-scrollbar-thumb {
-    background: #d1d5db;
+    background: #334155;
     border-radius: 9999px;
   }
 
   *::-webkit-scrollbar-thumb:hover {
-    background: #9ca3af;
+    background: #475569;
   }
 }
 
+/* Dark topographic background */
 .bg-topo {
-  background-color: #f3f4f6;
-  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  background-color: #0f172a;
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2310b981' fill-opacity='0.06'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Neon glow effects */
+.glow-green {
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.3), 0 0 40px rgba(16, 185, 129, 0.1);
+}
+
+.glow-green-sm {
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.25);
+}
+
+.glow-blue {
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.3), 0 0 40px rgba(59, 130, 246, 0.1);
+}
+
+.glow-amber {
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.3), 0 0 40px rgba(245, 158, 11, 0.1);
+}
+
+/* Text glow for accent text */
+.text-glow-green {
+  text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
 }
 
 @keyframes roll {
@@ -59,9 +82,22 @@
   }
 }
 
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(16, 185, 129, 0.5);
+  }
+}
+
 .animate-slide-in-right {
   animation: slide-in-right 0.3s ease-out;
   transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
 }
 
 .golf-ball-container {
@@ -74,10 +110,11 @@
   background: radial-gradient(circle at 35% 30%, #ffffff, #fafafa 40%, #f0f0f0 70%, #d8d8d8);
   border-radius: 50%;
   box-shadow:
-    0 6px 12px rgba(0, 0, 0, 0.25),
-    0 2px 4px rgba(0, 0, 0, 0.15),
+    0 6px 12px rgba(0, 0, 0, 0.4),
+    0 2px 4px rgba(0, 0, 0, 0.3),
     inset -2px -3px 6px rgba(0, 0, 0, 0.15),
-    inset 2px 3px 6px rgba(255, 255, 255, 0.8);
+    inset 2px 3px 6px rgba(255, 255, 255, 0.8),
+    0 0 15px rgba(16, 185, 129, 0.4);
   position: relative;
   animation: roll 2s linear infinite;
   border: 0.5px solid rgba(200, 200, 200, 0.3);
