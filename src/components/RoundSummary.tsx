@@ -1,10 +1,18 @@
 import { useState } from 'react';
 import { useGolf } from '../context/GolfContext';
-import { Trophy, Target, Share2, X } from 'lucide-react';
+import { Trophy, Target, Share2, X, TrendingUp } from 'lucide-react';
+import { ClubName, Direction } from '../types/golf';
 
 interface RoundSummaryProps {
   onClose: () => void;
   onNewRound: () => void;
+}
+
+interface ShotDispersion {
+  club: ClubName;
+  directions: Record<Direction, number>;
+  total: number;
+  insight: string;
 }
 
 export default function RoundSummary({ onClose, onNewRound }: RoundSummaryProps) {
@@ -13,6 +21,60 @@ export default function RoundSummary({ onClose, onNewRound }: RoundSummaryProps)
   const stats = getRoundStats();
 
   if (!round || !round.isRoundComplete) return null;
+
+  const analyzeShotDispersion = (clubName: ClubName): ShotDispersion | null => {
+    const shots = round.holes
+      .flatMap(hole => hole.shots)
+      .filter(shot => shot.club === clubName && !shot.wasMulligan);
+
+    if (shots.length === 0) return null;
+
+    const directions: Record<Direction, number> = {
+      'Wide Left': 0,
+      'Left': 0,
+      'Middle': 0,
+      'Right': 0,
+      'Wide Right': 0,
+    };
+
+    shots.forEach(shot => {
+      directions[shot.inputDirection]++;
+    });
+
+    const maxDirection = Object.entries(directions)
+      .filter(([_, count]) => count > 0)
+      .sort((a, b) => b[1] - a[1])[0];
+
+    const percentage = maxDirection ? Math.round((maxDirection[1] / shots.length) * 100) : 0;
+
+    let insight = '';
+    if (maxDirection && maxDirection[0] !== 'Middle' && percentage >= 40) {
+      insight = `You missed ${maxDirection[0]} on ${percentage}% of your ${clubName} shots.`;
+    } else if (directions['Middle'] >= shots.length * 0.6) {
+      insight = `Great accuracy! ${Math.round((directions['Middle'] / shots.length) * 100)}% of shots went straight.`;
+    } else {
+      const leftTotal = directions['Wide Left'] + directions['Left'];
+      const rightTotal = directions['Wide Right'] + directions['Right'];
+      if (leftTotal > rightTotal) {
+        insight = `Tendency to miss left (${Math.round((leftTotal / shots.length) * 100)}% of shots).`;
+      } else if (rightTotal > leftTotal) {
+        insight = `Tendency to miss right (${Math.round((rightTotal / shots.length) * 100)}% of shots).`;
+      } else {
+        insight = 'Your shots are well-distributed.';
+      }
+    }
+
+    return {
+      club: clubName,
+      directions,
+      total: shots.length,
+      insight,
+    };
+  };
+
+  const driverDispersion = analyzeShotDispersion('Driver');
+  const woodDispersion = analyzeShotDispersion('3 Wood');
+  const ironDispersion = analyzeShotDispersion('7 Iron');
 
   const eagles = round.holes.filter((_, idx) => getHoleStats(idx).score === -2).length;
   const birdies = round.holes.filter((_, idx) => getHoleStats(idx).score === -1).length;
@@ -134,6 +196,146 @@ export default function RoundSummary({ onClose, onNewRound }: RoundSummaryProps)
                 </div>
               )}
             </div>
+
+            {(driverDispersion || woodDispersion || ironDispersion) && (
+              <div className="bg-gradient-to-br from-blue-50 to-sky-50 border-2 border-blue-200 rounded-xl p-6 mb-6">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-blue-600" />
+                  Shot Dispersion Analysis
+                </h3>
+
+                <div className="space-y-6">
+                  {driverDispersion && (
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-semibold text-gray-800">{driverDispersion.club}</span>
+                        <span className="text-sm text-gray-600">{driverDispersion.total} shots</span>
+                      </div>
+
+                      <div className="space-y-2 mb-3">
+                        {(['Wide Left', 'Left', 'Middle', 'Right', 'Wide Right'] as Direction[]).map((direction) => {
+                          const count = driverDispersion.directions[direction];
+                          const percentage = driverDispersion.total > 0 ? (count / driverDispersion.total) * 100 : 0;
+
+                          const colorClass = direction === 'Middle'
+                            ? 'bg-green-500'
+                            : direction.includes('Wide')
+                            ? 'bg-red-500'
+                            : 'bg-amber-500';
+
+                          return count > 0 ? (
+                            <div key={direction}>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span className="text-gray-700">{direction}</span>
+                                <span className="text-gray-600 font-medium">{count} ({Math.round(percentage)}%)</span>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                                <div
+                                  className={`${colorClass} h-full rounded-full transition-all duration-500`}
+                                  style={{ width: `${percentage}%` }}
+                                />
+                              </div>
+                            </div>
+                          ) : null;
+                        })}
+                      </div>
+
+                      <div className="bg-blue-100 border-l-4 border-blue-500 p-3 rounded">
+                        <p className="text-sm font-medium text-blue-900">
+                          {driverDispersion.insight}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {woodDispersion && (
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-semibold text-gray-800">{woodDispersion.club}</span>
+                        <span className="text-sm text-gray-600">{woodDispersion.total} shots</span>
+                      </div>
+
+                      <div className="space-y-2 mb-3">
+                        {(['Wide Left', 'Left', 'Middle', 'Right', 'Wide Right'] as Direction[]).map((direction) => {
+                          const count = woodDispersion.directions[direction];
+                          const percentage = woodDispersion.total > 0 ? (count / woodDispersion.total) * 100 : 0;
+
+                          const colorClass = direction === 'Middle'
+                            ? 'bg-green-500'
+                            : direction.includes('Wide')
+                            ? 'bg-red-500'
+                            : 'bg-amber-500';
+
+                          return count > 0 ? (
+                            <div key={direction}>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span className="text-gray-700">{direction}</span>
+                                <span className="text-gray-600 font-medium">{count} ({Math.round(percentage)}%)</span>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                                <div
+                                  className={`${colorClass} h-full rounded-full transition-all duration-500`}
+                                  style={{ width: `${percentage}%` }}
+                                />
+                              </div>
+                            </div>
+                          ) : null;
+                        })}
+                      </div>
+
+                      <div className="bg-blue-100 border-l-4 border-blue-500 p-3 rounded">
+                        <p className="text-sm font-medium text-blue-900">
+                          {woodDispersion.insight}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {ironDispersion && (
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-semibold text-gray-800">{ironDispersion.club}</span>
+                        <span className="text-sm text-gray-600">{ironDispersion.total} shots</span>
+                      </div>
+
+                      <div className="space-y-2 mb-3">
+                        {(['Wide Left', 'Left', 'Middle', 'Right', 'Wide Right'] as Direction[]).map((direction) => {
+                          const count = ironDispersion.directions[direction];
+                          const percentage = ironDispersion.total > 0 ? (count / ironDispersion.total) * 100 : 0;
+
+                          const colorClass = direction === 'Middle'
+                            ? 'bg-green-500'
+                            : direction.includes('Wide')
+                            ? 'bg-red-500'
+                            : 'bg-amber-500';
+
+                          return count > 0 ? (
+                            <div key={direction}>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span className="text-gray-700">{direction}</span>
+                                <span className="text-gray-600 font-medium">{count} ({Math.round(percentage)}%)</span>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                                <div
+                                  className={`${colorClass} h-full rounded-full transition-all duration-500`}
+                                  style={{ width: `${percentage}%` }}
+                                />
+                              </div>
+                            </div>
+                          ) : null;
+                        })}
+                      </div>
+
+                      <div className="bg-blue-100 border-l-4 border-blue-500 p-3 rounded">
+                        <p className="text-sm font-medium text-blue-900">
+                          {ironDispersion.insight}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             <div className="flex gap-3 mb-4">
               <button
