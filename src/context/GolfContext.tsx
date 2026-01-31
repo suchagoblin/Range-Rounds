@@ -14,6 +14,7 @@ interface GolfContextType {
   skipHole: () => Promise<void>;
   undoLastShot: () => Promise<void>;
   useMulligan: () => Promise<void>;
+  exitRound: () => void;
   getCurrentHole: () => Hole | null;
   getHoleStats: (holeIndex: number) => HoleStats;
   getRoundStats: () => RoundStats;
@@ -908,6 +909,12 @@ export function GolfProvider({ children }: { children: ReactNode }) {
       });
   };
 
+  const exitRound = () => {
+    setRound(null);
+    setCurrentRoundId(null);
+    setCurrentCourseId(null);
+  };
+
   useEffect(() => {
     if (!currentCourseId || !profile) return;
 
@@ -934,6 +941,7 @@ export function GolfProvider({ children }: { children: ReactNode }) {
         skipHole,
         undoLastShot,
         useMulligan,
+        exitRound,
         getCurrentHole,
         getHoleStats,
         getRoundStats,
