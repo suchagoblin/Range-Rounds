@@ -131,3 +131,14 @@ export interface ActiveParticipant {
   profileName: string;
   lastActiveAt: string;
 }
+
+export interface CommunityLeaderboardEntry {
+  rank: number;
+  profileId: string;
+  profileName: string;
+  roundsPlayed: number;
+  bestScore: number;
+  bestScoreHoles: number;
+  averageScore: number;
+  totalRoundsCompleted: number;
+}

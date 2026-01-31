@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useMemo, useCallback, ReactNode } from 'react';
-import { Round, Hole, Shot, ClubName, Direction, Profile, ClubInBag, ClubType, BestRound, GameType, Competition, RoundSummary, SavedCourse, LeaderboardEntry, ActiveParticipant, HazardLocation, HazardType } from '../types/golf';
+import { Round, Hole, Shot, ClubName, Direction, Profile, ClubInBag, ClubType, BestRound, GameType, Competition, RoundSummary, SavedCourse, LeaderboardEntry, ActiveParticipant, HazardLocation, HazardType, CommunityLeaderboardEntry } from '../types/golf';
 import { calculateShotResult, generateHoles } from '../utils/golfLogic';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './AuthContext';
@@ -40,6 +40,7 @@ interface GolfContextType {
   updateParticipantActivity: (courseId: string) => Promise<void>;
   addCompetition: (gameType: GameType, betAmount: number) => Promise<void>;
   getCompetition: () => Promise<Competition | null>;
+  getCommunityLeaderboard: (limit?: number) => Promise<CommunityLeaderboardEntry[]>;
   currentCourseId: string | null;
 }
 
@@ -741,6 +742,111 @@ export function GolfProvider({ children }: { children: ReactNode }) {
     return data;
   };
 
+  const getCommunityLeaderboard = async (limit: number = 20): Promise<CommunityLeaderboardEntry[]> => {
+    interface RoundData {
+      profile_id: string;
+      total_score: number;
+      hole_count: number;
+      profiles: { id: string; name: string } | null;
+    }
+
+    const { data: rounds } = await supabase
+      .from('rounds')
+      .select(`
+        profile_id,
+        total_score,
+        hole_count,
+        profiles (
+          id,
+          name
+        )
+      `)
+      .eq('is_round_complete', true)
+      .not('total_score', 'is', null);
+
+    if (!rounds || rounds.length === 0) return [];
+
+    // Group rounds by player and calculate stats
+    const playerStats = new Map<string, {
+      profileId: string;
+      profileName: string;
+      rounds: { score: number; holes: number }[];
+    }>();
+
+    (rounds as unknown as RoundData[]).forEach((round) => {
+      const profileId = round.profile_id;
+      const profileName = round.profiles?.name || 'Unknown';
+
+      if (!playerStats.has(profileId)) {
+        playerStats.set(profileId, {
+          profileId,
+          profileName,
+          rounds: [],
+        });
+      }
+
+      playerStats.get(profileId)!.rounds.push({
+        score: round.total_score,
+        holes: round.hole_count,
+      });
+    });
+
+    // Calculate leaderboard entries
+    const leaderboard: CommunityLeaderboardEntry[] = [];
+
+    playerStats.forEach((stats) => {
+      const completedRounds = stats.rounds;
+      if (completedRounds.length === 0) return;
+
+      // Find best score (lowest relative to par, normalized to 18 holes)
+      let bestScore = Infinity;
+      let bestScoreHoles = 18;
+
+      completedRounds.forEach((round) => {
+        // Normalize to per-hole average for comparison
+        const scorePerHole = round.score / round.holes;
+        const bestPerHole = bestScore / bestScoreHoles;
+
+        if (scorePerHole < bestPerHole || bestScore === Infinity) {
+          bestScore = round.score;
+          bestScoreHoles = round.holes;
+        }
+      });
+
+      // Calculate average score (normalized to 18 holes)
+      const totalNormalizedScore = completedRounds.reduce((sum, r) => {
+        return sum + (r.score / r.holes) * 18;
+      }, 0);
+      const averageScore = Math.round((totalNormalizedScore / completedRounds.length) * 10) / 10;
+
+      leaderboard.push({
+        rank: 0, // Will be set after sorting
+        profileId: stats.profileId,
+        profileName: stats.profileName,
+        roundsPlayed: completedRounds.length,
+        bestScore,
+        bestScoreHoles,
+        averageScore,
+        totalRoundsCompleted: completedRounds.length,
+      });
+    });
+
+    // Sort by best score per hole (ascending - lower is better)
+    leaderboard.sort((a, b) => {
+      const aPerHole = a.bestScore / a.bestScoreHoles;
+      const bPerHole = b.bestScore / b.bestScoreHoles;
+      if (aPerHole !== bPerHole) return aPerHole - bPerHole;
+      // Tiebreaker: more rounds played
+      return b.roundsPlayed - a.roundsPlayed;
+    });
+
+    // Assign ranks and limit
+    return leaderboard.slice(0, limit).map((entry, idx) => ({
+      ...entry,
+      rank: idx + 1,
+    }));
+  };
+
   const saveCurrentCourse = async (name: string, description?: string): Promise<string | null> => {
     if (!profile || !round) return null;
 
@@ -1019,6 +1125,7 @@ export function GolfProvider({ children }: { children: ReactNode }) {
     updateParticipantActivity,
     addCompetition,
     getCompetition,
+    getCommunityLeaderboard,
   }), [
     round,
     profile,

@@ -11,6 +11,7 @@ interface SetupScreenProps {
   onOpenProfile: () => void;
   onOpenHistory: () => void;
   onOpenCourses: () => void;
+  onOpenLeaderboard: () => void;
 }
 
 interface FamousCourse {
@@ -19,7 +20,7 @@ interface FamousCourse {
   description: string;
 }
 
-export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourses }: SetupScreenProps) {
+export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourses, onOpenLeaderboard }: SetupScreenProps) {
   const { startRound, shareCourse, joinSharedCourse, profile, addCompetition } = useGolf();
   const [showMultiplayerDialog, setShowMultiplayerDialog] = useState(false);
   const [showCompetitionDialog, setShowCompetitionDialog] = useState(false);
@@ -222,25 +223,36 @@ export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourse
             <h2 className="text-xl font-bold text-gray-900">Get Started</h2>
             <div className="flex gap-2">
               <button
+                onClick={onOpenLeaderboard}
+                className="p-2.5 bg-amber-50 rounded-xl hover:bg-amber-100 transition-all border border-amber-200"
+                title="Community Leaderboard"
+                aria-label="View community leaderboard"
+              >
+                <Trophy className="w-5 h-5 text-amber-600" aria-hidden="true" />
+              </button>
+              <button
                 onClick={onOpenCourses}
                 className="p-2.5 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all border border-gray-200"
                 title="Manage Courses"
+                aria-label="Manage courses"
               >
-                <BookOpen className="w-5 h-5 text-gray-600" />
+                <BookOpen className="w-5 h-5 text-gray-600" aria-hidden="true" />
               </button>
               <button
                 onClick={onOpenHistory}
                 className="p-2.5 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all border border-gray-200"
                 title="View Round History"
+                aria-label="View round history"
               >
-                <History className="w-5 h-5 text-gray-600" />
+                <History className="w-5 h-5 text-gray-600" aria-hidden="true" />
               </button>
               <button
                 onClick={onOpenProfile}
                 className="p-2.5 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all border border-gray-200"
                 title="Manage Profile"
+                aria-label="Manage profile"
               >
-                <User className="w-5 h-5 text-gray-600" />
+                <User className="w-5 h-5 text-gray-600" aria-hidden="true" />
               </button>
             </div>
           </div>
