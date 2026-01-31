@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useGolf } from '../context/GolfContext';
-import { Trophy, Target, TrendingUp, Calendar, Share2, X, Download } from 'lucide-react';
+import { Trophy, Target, Share2, X } from 'lucide-react';
 
 interface RoundSummaryProps {
   onClose: () => void;

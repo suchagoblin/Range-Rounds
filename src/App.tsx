@@ -8,7 +8,7 @@ import CourseManager from './components/CourseManager';
 import RoundSummary from './components/RoundSummary';
 
 function App() {
-  const { round, profile, clubs, updateProfile, addClub, updateClub, deleteClub, startRound } = useGolf();
+  const { round, profile, clubs, updateProfile, addClub, updateClub, deleteClub } = useGolf();
   const [showProfile, setShowProfile] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showCourses, setShowCourses] = useState(false);

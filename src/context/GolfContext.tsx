@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Round, Hole, Shot, ClubName, Direction, Profile, ClubInBag, ClubType, BestRound, GameType, Competition } from '../types/golf';
-import { generateHole, calculateShotResult, generateHoles } from '../utils/golfLogic';
+import { calculateShotResult, generateHoles } from '../utils/golfLogic';
 import { supabase } from '../lib/supabase';
 
 interface GolfContextType {

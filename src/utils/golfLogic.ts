@@ -54,7 +54,7 @@ export function calculateShotResult(
   currentDistance: number,
   hazard: HazardLocation,
   hazardType: HazardType,
-  windSpeed: number,
+  _windSpeed: number,
   windDir: string
 ): ShotResult {
   let effectiveDistance = inputDistance;

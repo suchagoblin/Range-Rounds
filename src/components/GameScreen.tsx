@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useGolf } from '../context/GolfContext';
 import { Wind, Target, Droplet, TrendingUp, Undo2, User, SkipForward, RotateCcw } from 'lucide-react';
 import ShotInput from './ShotInput';
-import PuttingScreen from './PuttingScreen';
 import Scorecard from './Scorecard';
 import HoleOverview from './HoleOverview';
 import ActiveParticipants from './ActiveParticipants';

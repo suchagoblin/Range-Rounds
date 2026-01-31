@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useGolf } from '../context/GolfContext';
-import { ArrowLeft, BookOpen, Trash2, Share2, Users, Play, Plus, X, Trophy } from 'lucide-react';
+import { ArrowLeft, BookOpen, Trash2, Share2, Users, Play, X, Trophy } from 'lucide-react';
 import CourseLeaderboard from './CourseLeaderboard';
 
 interface Course {

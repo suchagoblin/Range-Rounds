@@ -18,7 +18,7 @@ interface FamousCourse {
 }
 
 export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourses }: SetupScreenProps) {
-  const { startRound, shareCourse, joinSharedCourse, saveCurrentCourse, profile, addCompetition } = useGolf();
+  const { startRound, shareCourse, joinSharedCourse, profile, addCompetition } = useGolf();
   const [showMultiplayerDialog, setShowMultiplayerDialog] = useState(false);
   const [showCompetitionDialog, setShowCompetitionDialog] = useState(false);
   const [showFamousCoursesDialog, setShowFamousCoursesDialog] = useState(false);

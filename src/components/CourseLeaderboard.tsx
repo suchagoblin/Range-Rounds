@@ -22,7 +22,6 @@ export default function CourseLeaderboard({ courseId, courseName, onClose }: Cou
   const { getCourseLeaderboard } = useGolf();
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isLive, setIsLive] = useState(true);
 
   useEffect(() => {
     loadLeaderboard();
