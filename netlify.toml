@@ -3,6 +3,12 @@
   command = "npm run build"
 
 [[redirects]]
+  from = "/og-image.png"
+  to = "https://apxtnlptxoqtgbrguwwf.supabase.co/functions/v1/og-image"
+  status = 200
+  headers = {Authorization = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFweHRubHB0eG9xdGdicmd1d3dmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk3OTA2NjIsImV4cCI6MjA4NTM2NjY2Mn0.wQQn1un016Qqjem87sdFpfP8stHYwEQn1ML2zzdZCsY"}
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
