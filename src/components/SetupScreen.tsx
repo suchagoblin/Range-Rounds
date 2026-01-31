@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useGolf } from '../context/GolfContext';
-import { Flag, Wind, User, History, BookOpen, Users, X, DollarSign, Trophy } from 'lucide-react';
+import { Flag, Wind, User, History, BookOpen, Users, X, DollarSign, Trophy, MapPin } from 'lucide-react';
 import { generateHoles } from '../utils/golfLogic';
 import { supabase } from '../lib/supabase';
 import { GameType } from '../types/golf';
@@ -276,7 +276,7 @@ export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourse
             className="w-full mb-6 py-5 bg-gradient-to-br from-amber-500 to-yellow-600 text-white rounded-2xl font-semibold text-base shadow-sm hover:shadow-md transform hover:scale-[1.01] transition-all border border-amber-600"
           >
             <div className="flex items-center justify-center gap-2.5 mb-1">
-              <Trophy className="w-6 h-6" />
+              <MapPin className="w-6 h-6" />
               <span>Famous Courses</span>
             </div>
             <div className="text-sm font-normal opacity-90">Play world-class championship courses</div>
@@ -615,7 +615,7 @@ export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourse
             <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-2xl w-full my-8">
               <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center gap-3">
-                  <Trophy className="w-8 h-8 text-yellow-600" />
+                  <MapPin className="w-8 h-8 text-yellow-600" />
                   <div>
                     <h2 className="text-2xl font-bold text-gray-800">Famous Courses</h2>
                     <p className="text-sm text-gray-600">World-class championship courses</p>
@@ -660,7 +660,7 @@ export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourse
 
               {famousCourses.length === 0 && (
                 <div className="text-center py-12 text-gray-500">
-                  <Trophy className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                  <MapPin className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                   <p>No famous courses available yet.</p>
                 </div>
               )}
