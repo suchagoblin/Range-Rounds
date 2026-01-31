@@ -89,8 +89,8 @@ export default function RoundHistory({ onBack }: RoundHistoryProps) {
       <div className="min-h-screen bg-topo p-6">
         <div className="max-w-4xl mx-auto">
           <div className="text-center py-12">
-            <div className="animate-spin w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading rounds...</p>
+            <div className="animate-spin w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full mx-auto"></div>
+            <p className="mt-4 text-slate-400">Loading rounds...</p>
           </div>
         </div>
       </div>
@@ -102,13 +102,13 @@ export default function RoundHistory({ onBack }: RoundHistoryProps) {
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
-            <History className="w-8 h-8 text-green-600" />
-            <h1 className="text-3xl font-bold text-gray-800">Round History</h1>
+            <History className="w-8 h-8 text-emerald-400" />
+            <h1 className="text-3xl font-bold text-white">Round History</h1>
           </div>
           {onBack && (
             <button
               onClick={onBack}
-              className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow hover:shadow-md transition-all text-gray-700 font-medium"
+              className="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-lg hover:bg-slate-700 transition-all text-slate-300 font-medium border border-slate-700"
             >
               <ArrowLeft className="w-5 h-5" />
               Back
@@ -117,46 +117,46 @@ export default function RoundHistory({ onBack }: RoundHistoryProps) {
         </div>
 
         {rounds.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
-            <History className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-gray-700 mb-2">No rounds yet</h2>
-            <p className="text-gray-500">Start a new round to track your golf game!</p>
+          <div className="bg-slate-800/80 backdrop-blur-sm rounded-2xl border border-slate-700 p-12 text-center">
+            <History className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+            <h2 className="text-xl font-semibold text-slate-300 mb-2">No rounds yet</h2>
+            <p className="text-slate-500">Start a new round to track your golf game!</p>
           </div>
         ) : (
           <div className="space-y-4">
             {rounds.map((round) => {
               const stats = calculateRoundStats(round);
-              const scoreColor = stats.score === 0 ? 'text-gray-700' : stats.score < 0 ? 'text-green-600' : 'text-red-600';
+              const scoreColor = stats.score === 0 ? 'text-white' : stats.score < 0 ? 'text-emerald-400' : 'text-red-400';
               const ScoreIcon = stats.score === 0 ? Target : stats.score < 0 ? TrendingDown : TrendingUp;
 
               return (
                 <div
                   key={round.id}
                   onClick={() => handleLoadRound(round.id)}
-                  className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all cursor-pointer p-6 border-2 border-transparent hover:border-green-500"
+                  className="bg-slate-800/80 backdrop-blur-sm rounded-xl border border-slate-700 hover:border-emerald-500/50 transition-all cursor-pointer p-6"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <Calendar className="w-5 h-5 text-gray-400" />
-                        <span className="text-gray-600">{formatDate(round.created_at)}</span>
+                        <Calendar className="w-5 h-5 text-slate-500" />
+                        <span className="text-slate-400">{formatDate(round.created_at)}</span>
                       </div>
 
                       <div className="flex items-center gap-4 mt-3">
-                        <div className="bg-green-50 px-4 py-2 rounded-lg">
-                          <div className="text-sm text-gray-600">Holes</div>
-                          <div className="text-xl font-bold text-green-700">
+                        <div className="bg-emerald-500/10 px-4 py-2 rounded-lg border border-emerald-500/20">
+                          <div className="text-sm text-slate-400">Holes</div>
+                          <div className="text-xl font-bold text-emerald-400">
                             {stats.completedHoles}/{round.hole_count}
                           </div>
                         </div>
 
-                        <div className="bg-blue-50 px-4 py-2 rounded-lg">
-                          <div className="text-sm text-gray-600">Strokes</div>
-                          <div className="text-xl font-bold text-blue-700">{stats.totalStrokes}</div>
+                        <div className="bg-blue-500/10 px-4 py-2 rounded-lg border border-blue-500/20">
+                          <div className="text-sm text-slate-400">Strokes</div>
+                          <div className="text-xl font-bold text-blue-400">{stats.totalStrokes}</div>
                         </div>
 
-                        <div className="bg-gray-50 px-4 py-2 rounded-lg">
-                          <div className="text-sm text-gray-600">Score</div>
+                        <div className="bg-slate-700/50 px-4 py-2 rounded-lg border border-slate-600">
+                          <div className="text-sm text-slate-400">Score</div>
                           <div className={`text-xl font-bold flex items-center gap-1 ${scoreColor}`}>
                             <ScoreIcon className="w-5 h-5" />
                             {stats.score > 0 ? '+' : ''}
@@ -167,7 +167,7 @@ export default function RoundHistory({ onBack }: RoundHistoryProps) {
 
                       {!round.is_round_complete && stats.completedHoles < round.hole_count && (
                         <div className="mt-3">
-                          <span className="inline-block bg-yellow-100 text-yellow-800 text-sm px-3 py-1 rounded-full font-medium">
+                          <span className="inline-block bg-amber-500/20 text-amber-400 text-sm px-3 py-1 rounded-full font-medium border border-amber-500/30">
                             In Progress
                           </span>
                         </div>
@@ -175,7 +175,7 @@ export default function RoundHistory({ onBack }: RoundHistoryProps) {
 
                       {round.is_round_complete && (
                         <div className="mt-3">
-                          <span className="inline-block bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full font-medium">
+                          <span className="inline-block bg-emerald-500/20 text-emerald-400 text-sm px-3 py-1 rounded-full font-medium border border-emerald-500/30">
                             Complete
                           </span>
                         </div>
@@ -185,14 +185,14 @@ export default function RoundHistory({ onBack }: RoundHistoryProps) {
                     <div className="flex gap-2">
                       <button
                         onClick={(e) => handleDeleteRound(e, round.id)}
-                        className="p-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition-colors"
+                        className="p-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg transition-colors border border-red-500/30"
                         title="Delete round"
                       >
                         <Trash2 className="w-5 h-5" />
                       </button>
                       <button
                         onClick={() => handleLoadRound(round.id)}
-                        className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+                        className="px-4 py-2 bg-gradient-to-br from-emerald-500 to-emerald-600 text-white rounded-lg font-medium hover:shadow-lg transition-all border border-emerald-400"
                       >
                         View
                       </button>

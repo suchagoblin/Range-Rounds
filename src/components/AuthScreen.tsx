@@ -76,26 +76,26 @@ export function AuthScreen() {
 
   return (
     <div className="min-h-screen bg-topo flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
+      <div className="bg-slate-800/90 backdrop-blur-sm rounded-2xl border border-slate-700 p-8 w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-block p-3 bg-green-100 rounded-full mb-4">
+          <div className="inline-block p-3 bg-emerald-500/20 rounded-full mb-4 border border-emerald-500/30">
             {isSignup ? (
-              <UserPlus className="w-8 h-8 text-green-600" />
+              <UserPlus className="w-8 h-8 text-emerald-400" />
             ) : (
-              <User className="w-8 h-8 text-green-600" />
+              <User className="w-8 h-8 text-emerald-400" />
             )}
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl font-bold text-white mb-2">
             {isSignup ? 'Create Account' : 'Welcome Back'}
           </h1>
-          <p className="text-gray-600">
+          <p className="text-slate-400">
             {isSignup ? 'Sign up to start tracking your golf game' : 'Sign in to continue'}
           </p>
         </div>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-slate-300 mb-2">
               Username
             </label>
             <input
@@ -106,14 +106,14 @@ export function AuthScreen() {
                 setError('');
               }}
               placeholder="Enter username"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full px-4 py-3 bg-slate-900 border-2 border-slate-600 rounded-lg text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
               disabled={isLoading}
             />
           </div>
 
           {isSignup && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-slate-300 mb-2">
                 Display Name
               </label>
               <input
@@ -124,14 +124,14 @@ export function AuthScreen() {
                   setError('');
                 }}
                 placeholder="Enter your name"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-4 py-3 bg-slate-900 border-2 border-slate-600 rounded-lg text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
                 disabled={isLoading}
               />
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-slate-300 mb-2">
               PIN (4-6 digits)
             </label>
             <div className="flex gap-2 mb-4 justify-center">
@@ -140,14 +140,14 @@ export function AuthScreen() {
                   key={i}
                   className={`w-12 h-12 border-2 rounded-lg flex items-center justify-center transition-colors ${
                     pin[i]
-                      ? 'border-green-500 bg-green-50'
+                      ? 'border-emerald-500 bg-emerald-500/20'
                       : i < 4
-                      ? 'border-gray-300 bg-gray-50'
-                      : 'border-gray-200 bg-gray-100'
+                      ? 'border-slate-600 bg-slate-800'
+                      : 'border-slate-700 bg-slate-900'
                   }`}
                 >
                   {pin[i] && (
-                    <Lock className="w-5 h-5 text-green-600" />
+                    <Lock className="w-5 h-5 text-emerald-400" />
                   )}
                 </div>
               ))}
@@ -159,7 +159,7 @@ export function AuthScreen() {
                   key={digit}
                   onClick={() => handlePinInput(digit.toString())}
                   disabled={isLoading || pin.length >= 6}
-                  className="h-14 bg-gray-100 hover:bg-gray-200 rounded-lg font-semibold text-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="h-14 bg-slate-700 hover:bg-slate-600 rounded-lg font-semibold text-lg text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-slate-600"
                 >
                   {digit}
                 </button>
@@ -167,21 +167,21 @@ export function AuthScreen() {
               <button
                 onClick={handlePinDelete}
                 disabled={isLoading || pin.length === 0}
-                className="h-14 bg-red-100 hover:bg-red-200 rounded-lg font-semibold text-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="h-14 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg font-semibold text-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-red-500/30"
               >
                 ←
               </button>
               <button
                 onClick={() => handlePinInput('0')}
                 disabled={isLoading || pin.length >= 6}
-                className="h-14 bg-gray-100 hover:bg-gray-200 rounded-lg font-semibold text-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="h-14 bg-slate-700 hover:bg-slate-600 rounded-lg font-semibold text-lg text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-slate-600"
               >
                 0
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={isLoading || pin.length < 4 || !username || (isSignup && !name)}
-                className="h-14 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="h-14 bg-gradient-to-br from-emerald-500 to-emerald-600 hover:shadow-lg text-white rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-emerald-400"
               >
                 {isLoading ? '...' : '✓'}
               </button>
@@ -189,8 +189,8 @@ export function AuthScreen() {
           </div>
 
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-600 text-center">{error}</p>
+            <div className="p-3 bg-red-500/20 border border-red-500/30 rounded-lg">
+              <p className="text-sm text-red-400 text-center">{error}</p>
             </div>
           )}
 
@@ -198,7 +198,7 @@ export function AuthScreen() {
             <button
               onClick={toggleMode}
               disabled={isLoading}
-              className="text-green-600 hover:text-green-700 font-medium text-sm"
+              className="text-emerald-400 hover:text-emerald-300 font-medium text-sm"
             >
               {isSignup
                 ? 'Already have an account? Sign in'

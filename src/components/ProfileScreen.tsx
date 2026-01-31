@@ -107,31 +107,31 @@ export default function ProfileScreen({
   return (
     <div className="min-h-screen bg-topo p-4">
       <div className="max-w-2xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+        <div className="bg-slate-800/80 backdrop-blur-sm rounded-2xl border border-slate-700 p-6 mb-6">
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-              <User className="w-7 h-7 text-green-600" />
+            <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+              <User className="w-7 h-7 text-emerald-400" />
               Profile
             </h1>
             <button
               onClick={onBack}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              className="px-4 py-2 text-sm font-medium text-slate-300 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors border border-slate-600"
             >
               Back to Game
             </button>
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-slate-300 mb-2">
               Username
             </label>
-            <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-700 font-medium">
+            <div className="px-4 py-2 bg-slate-900 border border-slate-600 rounded-lg text-slate-300 font-medium">
               @{username}
             </div>
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-slate-300 mb-2">
               Display Name
             </label>
             <div className="flex gap-2">
@@ -139,12 +139,12 @@ export default function ProfileScreen({
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="flex-1 px-4 py-2 bg-slate-900 border-2 border-slate-600 rounded-lg text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
                 placeholder="Enter your name"
               />
               <button
                 onClick={handleSaveName}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+                className="px-4 py-2 bg-gradient-to-br from-emerald-500 to-emerald-600 text-white rounded-lg hover:shadow-lg transition-all flex items-center gap-2 border border-emerald-400"
               >
                 <Save className="w-4 h-4" />
                 Save
@@ -154,29 +154,29 @@ export default function ProfileScreen({
 
           <button
             onClick={logout}
-            className="w-full px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors flex items-center justify-center gap-2 font-medium"
+            className="w-full px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors flex items-center justify-center gap-2 font-medium border border-red-500/30"
           >
             <LogOut className="w-4 h-4" />
             Sign Out
           </button>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+        <div className="bg-slate-800/80 backdrop-blur-sm rounded-2xl border border-slate-700 p-6 mb-6">
           <div className="flex items-center gap-2 mb-4">
-            <Wind className="w-6 h-6 text-sky-600" />
-            <h2 className="text-xl font-bold text-gray-800">Wind Settings</h2>
+            <Wind className="w-6 h-6 text-sky-400" />
+            <h2 className="text-xl font-bold text-white">Wind Settings</h2>
           </div>
 
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg border border-slate-600">
               <div>
-                <div className="font-semibold text-gray-800">Enable Wind</div>
-                <div className="text-sm text-gray-600">Apply wind effects during gameplay</div>
+                <div className="font-semibold text-white">Enable Wind</div>
+                <div className="text-sm text-slate-400">Apply wind effects during gameplay</div>
               </div>
               <button
                 onClick={() => setLocalWindEnabled(!localWindEnabled)}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  localWindEnabled ? 'bg-green-600' : 'bg-gray-300'
+                  localWindEnabled ? 'bg-emerald-500' : 'bg-slate-600'
                 }`}
               >
                 <span
@@ -188,44 +188,44 @@ export default function ProfileScreen({
             </div>
 
             {localWindEnabled && (
-              <div className="space-y-3 p-4 bg-sky-50 rounded-lg border border-sky-200">
+              <div className="space-y-3 p-4 bg-sky-500/10 rounded-lg border border-sky-500/30">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-slate-300 mb-2">
                     Wind Speed (mph)
                   </label>
                   <input
                     type="number"
                     value={localWindSpeed}
                     onChange={(e) => setLocalWindSpeed(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500"
+                    className="w-full px-3 py-2 bg-slate-900 border-2 border-slate-600 rounded-lg text-white focus:border-sky-500 focus:outline-none"
                     min="0"
                     max="50"
                   />
-                  <p className="text-xs text-gray-600 mt-1">Set to your current real-life wind speed</p>
+                  <p className="text-xs text-slate-500 mt-1">Set to your current real-life wind speed</p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-slate-300 mb-2">
                     Wind Direction
                   </label>
                   <select
                     value={localWindDirection}
                     onChange={(e) => setLocalWindDirection(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500"
+                    className="w-full px-3 py-2 bg-slate-900 border-2 border-slate-600 rounded-lg text-white focus:border-sky-500 focus:outline-none"
                   >
                     <option value="Headwind">Headwind (into you)</option>
                     <option value="Tailwind">Tailwind (behind you)</option>
                     <option value="Left-to-Right">Left-to-Right (crosswind)</option>
                     <option value="Right-to-Left">Right-to-Left (crosswind)</option>
                   </select>
-                  <p className="text-xs text-gray-600 mt-1">Set to match your actual playing conditions</p>
+                  <p className="text-xs text-slate-500 mt-1">Set to match your actual playing conditions</p>
                 </div>
               </div>
             )}
 
             <button
               onClick={handleSaveWindSettings}
-              className="w-full px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-colors flex items-center justify-center gap-2 font-medium"
+              className="w-full px-4 py-2 bg-gradient-to-br from-sky-500 to-sky-600 text-white rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2 font-medium border border-sky-400"
             >
               <Save className="w-4 h-4" />
               Save Wind Settings
@@ -234,29 +234,29 @@ export default function ProfileScreen({
         </div>
 
         {bestRounds.length > 0 && (
-          <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+          <div className="bg-slate-800/80 backdrop-blur-sm rounded-2xl border border-slate-700 p-6 mb-6">
             <div className="flex items-center gap-2 mb-4">
-              <Trophy className="w-6 h-6 text-yellow-600" />
-              <h2 className="text-xl font-bold text-gray-800">Best Rounds</h2>
+              <Trophy className="w-6 h-6 text-amber-400" />
+              <h2 className="text-xl font-bold text-white">Best Rounds</h2>
             </div>
             <div className="space-y-3">
               {bestRounds.map((round, index) => (
                 <div
                   key={round.id}
-                  className="flex items-center justify-between p-3 bg-gradient-to-r from-yellow-50 to-amber-50 rounded-lg border border-yellow-200"
+                  className="flex items-center justify-between p-3 bg-gradient-to-r from-amber-500/10 to-amber-400/5 rounded-lg border border-amber-500/20"
                 >
                   <div className="flex items-center gap-3">
                     <div className={`flex items-center justify-center w-8 h-8 rounded-full font-bold text-sm ${
-                      index === 0 ? 'bg-yellow-400 text-yellow-900' :
-                      index === 1 ? 'bg-gray-300 text-gray-700' :
+                      index === 0 ? 'bg-amber-400 text-amber-900' :
+                      index === 1 ? 'bg-slate-400 text-slate-900' :
                       index === 2 ? 'bg-amber-600 text-white' :
-                      'bg-gray-200 text-gray-600'
+                      'bg-slate-600 text-slate-300'
                     }`}>
                       {index + 1}
                     </div>
                     <div>
-                      <div className="font-bold text-gray-800 text-lg">{round.total_score} strokes</div>
-                      <div className="text-xs text-gray-600">
+                      <div className="font-bold text-white text-lg">{round.total_score} strokes</div>
+                      <div className="text-xs text-slate-400">
                         {new Date(round.created_at).toLocaleDateString()} • {round.hole_count} holes
                       </div>
                     </div>
@@ -267,12 +267,12 @@ export default function ProfileScreen({
           </div>
         )}
 
-        <div className="bg-white rounded-2xl shadow-lg p-6">
+        <div className="bg-slate-800/80 backdrop-blur-sm rounded-2xl border border-slate-700 p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-800">My Bag</h2>
+            <h2 className="text-xl font-bold text-white">My Bag</h2>
             <button
               onClick={() => setIsAddingClub(true)}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+              className="px-4 py-2 bg-gradient-to-br from-emerald-500 to-emerald-600 text-white rounded-lg hover:shadow-lg transition-all flex items-center gap-2 border border-emerald-400"
             >
               <Plus className="w-4 h-4" />
               Add Club
@@ -280,11 +280,11 @@ export default function ProfileScreen({
           </div>
 
           {isAddingClub && (
-            <div className="mb-6 p-4 bg-green-50 rounded-lg border-2 border-green-200">
-              <h3 className="font-semibold text-gray-800 mb-3">Add New Club</h3>
+            <div className="mb-6 p-4 bg-emerald-500/10 rounded-lg border border-emerald-500/30">
+              <h3 className="font-semibold text-white mb-3">Add New Club</h3>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-300 mb-1">
                     Club Type
                   </label>
                   <select
@@ -294,7 +294,7 @@ export default function ProfileScreen({
                       setSelectedType(type);
                       setSelectedClub(CLUB_OPTIONS[type][0]);
                     }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white focus:border-emerald-500 focus:outline-none"
                   >
                     {clubTypeOrder.map(type => (
                       <option key={type} value={type}>{type}</option>
@@ -302,13 +302,13 @@ export default function ProfileScreen({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-300 mb-1">
                     Club
                   </label>
                   <select
                     value={selectedClub}
                     onChange={(e) => setSelectedClub(e.target.value as ClubName)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white focus:border-emerald-500 focus:outline-none"
                   >
                     {CLUB_OPTIONS[selectedType].map(club => (
                       <option key={club} value={club}>{club}</option>
@@ -316,27 +316,27 @@ export default function ProfileScreen({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-300 mb-1">
                     Typical Yardage
                   </label>
                   <input
                     type="number"
                     value={yardage}
                     onChange={(e) => setYardage(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white focus:border-emerald-500 focus:outline-none"
                     min="1"
                   />
                 </div>
                 <div className="flex gap-2">
                   <button
                     onClick={handleAddClub}
-                    className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                    className="flex-1 px-4 py-2 bg-gradient-to-br from-emerald-500 to-emerald-600 text-white rounded-lg hover:shadow-lg transition-all font-medium border border-emerald-400"
                   >
                     Add Club
                   </button>
                   <button
                     onClick={() => setIsAddingClub(false)}
-                    className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+                    className="flex-1 px-4 py-2 bg-slate-700 text-slate-300 rounded-lg hover:bg-slate-600 transition-colors font-medium border border-slate-600"
                   >
                     Cancel
                   </button>
@@ -346,7 +346,7 @@ export default function ProfileScreen({
           )}
 
           {clubs.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
+            <div className="text-center py-12 text-slate-500">
               <p className="mb-2">No clubs in your bag yet.</p>
               <p className="text-sm">Add clubs to get personalized recommendations.</p>
             </div>
@@ -358,18 +358,18 @@ export default function ProfileScreen({
 
                 return (
                   <div key={type}>
-                    <h3 className="text-sm font-bold text-gray-600 uppercase tracking-wider mb-2">
+                    <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">
                       {type}s
                     </h3>
                     <div className="space-y-2">
                       {typeClubs.map(club => (
                         <div
                           key={club.id}
-                          className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                          className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg hover:bg-slate-700 transition-colors border border-slate-600"
                         >
                           <div className="flex-1">
-                            <div className="font-semibold text-gray-800">{club.club_name}</div>
-                            <div className="text-sm text-gray-600">
+                            <div className="font-semibold text-white">{club.club_name}</div>
+                            <div className="text-sm text-slate-400">
                               {editingYardages[club.id] !== undefined ? (
                                 <div className="flex items-center gap-2 mt-1">
                                   <input
@@ -379,12 +379,12 @@ export default function ProfileScreen({
                                       ...prev,
                                       [club.id]: e.target.value
                                     }))}
-                                    className="w-24 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-green-500"
+                                    className="w-24 px-2 py-1 bg-slate-900 border border-slate-600 rounded text-white focus:border-emerald-500 focus:outline-none"
                                     min="1"
                                   />
                                   <button
                                     onClick={() => handleUpdateYardage(club.id)}
-                                    className="px-3 py-1 bg-green-600 text-white rounded text-xs font-medium hover:bg-green-700"
+                                    className="px-3 py-1 bg-emerald-500 text-white rounded text-xs font-medium hover:bg-emerald-600"
                                   >
                                     Save
                                   </button>
@@ -394,7 +394,7 @@ export default function ProfileScreen({
                                       delete updated[club.id];
                                       return updated;
                                     })}
-                                    className="px-3 py-1 bg-gray-200 text-gray-700 rounded text-xs font-medium hover:bg-gray-300"
+                                    className="px-3 py-1 bg-slate-600 text-slate-300 rounded text-xs font-medium hover:bg-slate-500"
                                   >
                                     Cancel
                                   </button>
@@ -405,7 +405,7 @@ export default function ProfileScreen({
                                     ...prev,
                                     [club.id]: club.yardage.toString()
                                   }))}
-                                  className="hover:text-green-600"
+                                  className="hover:text-emerald-400"
                                 >
                                   {club.yardage} yards
                                 </button>
@@ -414,7 +414,7 @@ export default function ProfileScreen({
                           </div>
                           <button
                             onClick={() => onDeleteClub(club.id)}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
