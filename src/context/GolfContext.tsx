@@ -26,6 +26,7 @@ interface GolfContextType {
   getSuggestedClub: (distance: number) => ClubName | null;
   loadRound: (roundId: string) => Promise<void>;
   getPastRounds: () => Promise<any[]>;
+  deleteRound: (roundId: string) => Promise<void>;
   getBestRounds: (limit?: number) => Promise<BestRound[]>;
   saveCurrentCourse: (name: string, description?: string) => Promise<string | null>;
   getSavedCourses: () => Promise<any[]>;
@@ -748,6 +749,10 @@ export function GolfProvider({ children }: { children: ReactNode }) {
     return courses || [];
   };
 
+  const deleteRound = async (roundId: string) => {
+    await supabase.from('rounds').delete().eq('id', roundId);
+  };
+
   const deleteCourse = async (courseId: string) => {
     await supabase.from('courses').delete().eq('id', courseId);
   };
@@ -945,6 +950,7 @@ export function GolfProvider({ children }: { children: ReactNode }) {
         getSuggestedClub,
         loadRound,
         getPastRounds,
+        deleteRound,
         getBestRounds,
         saveCurrentCourse,
         getSavedCourses,

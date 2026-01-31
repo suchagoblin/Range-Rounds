@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useGolf } from '../context/GolfContext';
-import { History, Calendar, Target, TrendingUp, TrendingDown, ArrowLeft } from 'lucide-react';
+import { History, Calendar, Target, TrendingUp, TrendingDown, ArrowLeft, Trash2 } from 'lucide-react';
 
 interface RoundSummary {
   id: string;
@@ -22,7 +22,7 @@ interface RoundHistoryProps {
 }
 
 export default function RoundHistory({ onBack }: RoundHistoryProps) {
-  const { getPastRounds, loadRound } = useGolf();
+  const { getPastRounds, loadRound, deleteRound } = useGolf();
   const [rounds, setRounds] = useState<RoundSummary[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -73,6 +73,15 @@ export default function RoundHistory({ onBack }: RoundHistoryProps) {
   const handleLoadRound = async (roundId: string) => {
     await loadRound(roundId);
     if (onBack) onBack();
+  };
+
+  const handleDeleteRound = async (e: React.MouseEvent, roundId: string) => {
+    e.stopPropagation();
+
+    if (window.confirm('Are you sure you want to delete this round? This action cannot be undone.')) {
+      await deleteRound(roundId);
+      await loadRounds();
+    }
   };
 
   if (loading) {
@@ -173,7 +182,14 @@ export default function RoundHistory({ onBack }: RoundHistoryProps) {
                       )}
                     </div>
 
-                    <div className="text-right">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={(e) => handleDeleteRound(e, round.id)}
+                        className="p-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition-colors"
+                        title="Delete round"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
                       <button
                         onClick={() => handleLoadRound(round.id)}
                         className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
