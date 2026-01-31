@@ -33,7 +33,7 @@ export default function GameScreen({ onOpenProfile }: GameScreenProps) {
   const totalShots = currentHole.shots.reduce((sum, shot) => sum + 1 + shot.penaltyStrokes, 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50">
+    <div className="min-h-screen bg-topo">
       {currentCourseId && <ActiveParticipants courseId={currentCourseId} />}
       <div className="max-w-md mx-auto px-4 py-6">
         <div className="mb-6">
