@@ -22,6 +22,7 @@ interface GolfContextType {
   getHoleStats: (holeIndex: number) => HoleStats;
   getRoundStats: () => RoundStats;
   updateProfile: (name: string) => Promise<void>;
+  updateWindSettings: (windEnabled: boolean, windSpeed: number, windDirection: string) => Promise<void>;
   addClub: (clubType: ClubType, clubName: ClubName, yardage: number) => Promise<void>;
   updateClub: (clubId: string, yardage: number) => Promise<void>;
   deleteClub: (clubId: string) => Promise<void>;
@@ -147,6 +148,26 @@ export function GolfProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const updateWindSettings = async (windEnabled: boolean, windSpeed: number, windDirection: string) => {
+    if (!profile) return;
+
+    const { data } = await supabase
+      .from('profiles')
+      .update({
+        wind_enabled: windEnabled,
+        wind_speed: windSpeed,
+        wind_direction: windDirection,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', profile.id)
+      .select()
+      .single();
+
+    if (data) {
+      setProfile(data);
+    }
+  };
+
   const addClub = async (clubType: ClubType, clubName: ClubName, yardage: number) => {
     if (!profile) return;
 
@@ -232,7 +253,12 @@ export function GolfProvider({ children }: { children: ReactNode }) {
         setCurrentCourseId(courseId);
       }
     } else {
-      holes = generateHoles(holeCount);
+      holes = generateHoles(
+        holeCount,
+        profile.wind_enabled,
+        profile.wind_speed,
+        profile.wind_direction
+      );
       setCurrentCourseId(null);
     }
 
@@ -1107,6 +1133,7 @@ export function GolfProvider({ children }: { children: ReactNode }) {
     getHoleStats,
     getRoundStats,
     updateProfile,
+    updateWindSettings,
     addClub,
     updateClub,
     deleteClub,

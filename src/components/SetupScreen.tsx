@@ -36,6 +36,13 @@ export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourse
   const [mulligans, setMulligans] = useState('2');
   const [famousCourses, setFamousCourses] = useState<FamousCourse[]>([]);
   const [_isLoading, setIsLoading] = useState(false);
+  const [isMultiplayerRound, setIsMultiplayerRound] = useState(false);
+
+  const getDefaultMulligans = (holes: 3 | 9 | 18): string => {
+    if (holes === 3) return '1';
+    if (holes === 9) return '2';
+    return '3';
+  };
 
   useEffect(() => {
     loadFamousCourses();
@@ -56,7 +63,10 @@ export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourse
   const handleSelectFamousCourse = (courseId: string) => {
     setPendingCourseId(courseId);
     setHoleCount(18);
+    setMulligans(getDefaultMulligans(18));
     setShowFamousCoursesDialog(false);
+    setIsMultiplayerRound(false);
+    setGameType('stroke_play');
     setShowCompetitionDialog(true);
   };
 
@@ -118,34 +128,17 @@ export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourse
     }
   };
 
-  const handleStartPlaying = async () => {
-    if (pendingCourseId && holeCount) {
-      setIsLoading(true);
-      try {
-        const mulliganCount = parseInt(mulligans) || 2;
-        await startRound(holeCount, pendingCourseId, mulliganCount);
-
-        if (gameType !== 'stroke_play') {
-          const bet = parseFloat(betAmount) || 1;
-          await addCompetition(gameType, bet);
-        }
-
-        setShowMultiplayerDialog(false);
-        setMultiplayerMode(null);
-        setShareCode(null);
-        setPendingCourseId(null);
-        showToast('Round started', 'success');
-      } catch (error) {
-        showToast('Failed to start round', 'error');
-        console.error('Error starting round:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
+  const handleStartPlaying = () => {
+    setShowMultiplayerDialog(false);
+    setIsMultiplayerRound(true);
+    setShowCompetitionDialog(true);
   };
 
   const handleStartSoloRound = async (holes: 3 | 9 | 18) => {
     setHoleCount(holes);
+    setMulligans(getDefaultMulligans(holes));
+    setIsMultiplayerRound(false);
+    setGameType('stroke_play');
     setShowCompetitionDialog(true);
   };
 
@@ -161,7 +154,11 @@ export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourse
       }
 
       setShowCompetitionDialog(false);
+      setShowMultiplayerDialog(false);
+      setMultiplayerMode(null);
+      setShareCode(null);
       setPendingCourseId(null);
+      setIsMultiplayerRound(false);
       showToast('Round started', 'success');
     } catch (error) {
       showToast('Failed to start round', 'error');
@@ -191,8 +188,11 @@ export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourse
 
         if (courseData && courseData[0]) {
           setPendingCourseId(courseId);
-          setHoleCount(courseData[0].hole_count);
+          const holes = courseData[0].hole_count as 3 | 9 | 18;
+          setHoleCount(holes);
+          setMulligans(getDefaultMulligans(holes));
           setShowMultiplayerDialog(false);
+          setIsMultiplayerRound(true);
           setShowCompetitionDialog(true);
           showToast('Joined course successfully', 'success');
         }
@@ -439,7 +439,11 @@ export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourse
                       {[3, 9, 18].map((count) => (
                         <button
                           key={count}
-                          onClick={() => setHoleCount(count as 3 | 9 | 18)}
+                          onClick={() => {
+                            const holes = count as 3 | 9 | 18;
+                            setHoleCount(holes);
+                            setMulligans(getDefaultMulligans(holes));
+                          }}
                           className={`py-3 rounded-lg font-semibold transition-all ${
                             holeCount === count
                               ? 'bg-emerald-500 text-white border border-emerald-400 glow-green-sm'
@@ -569,6 +573,36 @@ export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourse
                         Nassau
                       </div>
                     </button>
+                    {isMultiplayerRound && (
+                      <>
+                        <button
+                          onClick={() => setGameType('skins')}
+                          className={`w-full py-3 rounded-lg font-semibold transition-all ${
+                            gameType === 'skins'
+                              ? 'bg-yellow-600 text-white shadow-lg'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          <div className="flex items-center justify-center gap-2">
+                            <DollarSign className="w-4 h-4" />
+                            Skins
+                          </div>
+                        </button>
+                        <button
+                          onClick={() => setGameType('nassau')}
+                          className={`w-full py-3 rounded-lg font-semibold transition-all ${
+                            gameType === 'nassau'
+                              ? 'bg-blue-600 text-white shadow-lg'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          <div className="flex items-center justify-center gap-2">
+                            <DollarSign className="w-4 h-4" />
+                            Nassau
+                          </div>
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
 

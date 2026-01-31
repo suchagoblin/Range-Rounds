@@ -1,18 +1,20 @@
 import { useState } from 'react';
 import { useGolf } from '../context/GolfContext';
-import { Wind, Target, Droplet, TrendingUp, Undo2, User, SkipForward, RotateCcw } from 'lucide-react';
+import { Wind, Target, Droplet, TrendingUp, Undo2, User, SkipForward, RotateCcw, X, XCircle, Save } from 'lucide-react';
 import ShotInput from './ShotInput';
 import Scorecard from './Scorecard';
 import HoleOverview from './HoleOverview';
 import ActiveParticipants from './ActiveParticipants';
+import { showToast } from '../utils/toast';
 
 interface GameScreenProps {
   onOpenProfile: () => void;
 }
 
 export default function GameScreen({ onOpenProfile }: GameScreenProps) {
-  const { getCurrentHole, undoLastShot, useMulligan, skipHole, getRoundStats, round, currentCourseId } = useGolf();
+  const { getCurrentHole, undoLastShot, useMulligan, skipHole, getRoundStats, round, currentCourseId, exitRound, deleteRound, currentRoundId } = useGolf();
   const [showScorecard, setShowScorecard] = useState(false);
+  const [showEndRoundDialog, setShowEndRoundDialog] = useState(false);
 
   const currentHole = getCurrentHole();
   const stats = getRoundStats();
@@ -22,6 +24,19 @@ export default function GameScreen({ onOpenProfile }: GameScreenProps) {
   if (showScorecard) {
     return <Scorecard onClose={() => setShowScorecard(false)} />;
   }
+
+  const handleDiscardRound = async () => {
+    if (currentRoundId) {
+      await deleteRound(currentRoundId);
+      exitRound();
+      showToast('Round discarded', 'success');
+    }
+  };
+
+  const handleSaveRound = () => {
+    exitRound();
+    showToast('Round saved. You can resume it from your history.', 'success');
+  };
 
   const currentDistance = currentHole.shots.length === 0
     ? currentHole.yardage
@@ -101,6 +116,9 @@ export default function GameScreen({ onOpenProfile }: GameScreenProps) {
               <span className="text-sm font-semibold text-slate-300">
                 {currentHole.windSpeed === 0 || currentHole.windDir === 'None' ? (
                   <span className="text-slate-500">Disabled</span>
+              <span className="text-sm font-semibold text-gray-700">
+                {currentHole.windSpeed === 0 || currentHole.windDir === 'None' ? (
+                  <span className="text-gray-400">Disabled</span>
                 ) : (
                   `${currentHole.windSpeed} mph ${currentHole.windDir}`
                 )}
@@ -218,7 +236,59 @@ export default function GameScreen({ onOpenProfile }: GameScreenProps) {
             </div>
           </div>
         )}
+
+        <button
+          onClick={() => setShowEndRoundDialog(true)}
+          className="mt-6 w-full py-3 bg-white border-2 border-red-200 rounded-2xl font-semibold text-red-600 hover:bg-red-50 hover:border-red-300 transition-all flex items-center justify-center gap-2 shadow-sm"
+        >
+          <XCircle className="w-5 h-5" />
+          End Round
+        </button>
       </div>
+
+      {showEndRoundDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold text-gray-800">End Round</h2>
+              <button
+                onClick={() => setShowEndRoundDialog(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-600" />
+              </button>
+            </div>
+
+            <p className="text-gray-600 mb-6">
+              Would you like to save this round or discard it?
+            </p>
+
+            <div className="space-y-3">
+              <button
+                onClick={handleSaveRound}
+                className="w-full py-4 bg-gradient-to-br from-emerald-500 to-emerald-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2"
+              >
+                <Save className="w-5 h-5" />
+                Save Round
+              </button>
+              <p className="text-xs text-gray-500 text-center -mt-2 mb-4">
+                Resume this round later from your history
+              </p>
+
+              <button
+                onClick={handleDiscardRound}
+                className="w-full py-4 bg-gradient-to-br from-red-500 to-red-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2"
+              >
+                <XCircle className="w-5 h-5" />
+                Discard Round
+              </button>
+              <p className="text-xs text-gray-500 text-center -mt-2">
+                Permanently delete this round
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
