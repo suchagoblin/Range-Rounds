@@ -210,9 +210,9 @@ export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourse
   return (
     <div className="min-h-screen bg-topo flex items-center justify-center px-4 py-8">
       <div className="max-w-md w-full">
-        <div className="text-center mb-10 relative">
+        <div className="text-center mb-10 relative max-w-2xl mx-auto px-4">
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="w-96 h-96 bg-gradient-to-br from-emerald-500/10 via-green-500/5 to-teal-500/10 rounded-full blur-3xl animate-pulse"></div>
+            <div className="w-[700px] h-96 bg-gradient-to-br from-emerald-500/10 via-green-500/5 to-teal-500/10 rounded-full blur-3xl animate-pulse"></div>
           </div>
 
           <div className="absolute top-0 left-1/4 w-2 h-2 bg-emerald-400 rounded-full animate-ping"></div>
