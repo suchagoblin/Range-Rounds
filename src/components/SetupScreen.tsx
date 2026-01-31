@@ -210,14 +210,11 @@ export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourse
   return (
     <div className="min-h-screen bg-topo flex items-center justify-center px-4 py-8">
       <div className="max-w-md w-full">
-        <div className="text-center mb-10 relative max-w-2xl mx-auto px-4">
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="w-[700px] h-96 bg-gradient-to-br from-emerald-500/10 via-green-500/5 to-teal-500/10 rounded-full blur-3xl animate-pulse"></div>
-          </div>
-
+        <div className="text-center mb-10 relative">
           <div className="absolute top-0 left-1/4 w-2 h-2 bg-emerald-400 rounded-full animate-ping"></div>
           <div className="absolute top-10 right-1/4 w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse delay-100"></div>
           <div className="absolute top-5 left-1/3 w-1 h-1 bg-teal-400 rounded-full animate-ping delay-200"></div>
+          <div className="absolute -top-10 right-1/3 w-1 h-1 bg-emerald-300 rounded-full animate-pulse delay-300"></div>
 
           <div className="relative inline-flex items-center justify-center mb-6 group">
             <div className="absolute w-32 h-32 bg-gradient-to-br from-emerald-400/20 to-green-500/20 rounded-full blur-2xl group-hover:scale-110 transition-transform duration-500"></div>
@@ -250,7 +247,7 @@ export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourse
             <div className="flex items-center justify-center gap-4 text-sm">
               <div className="flex items-center gap-1.5 bg-slate-800/50 backdrop-blur-sm px-3 py-1.5 rounded-full border border-emerald-500/20">
                 <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-                <span className="text-slate-300 font-medium">Practice Anywhere</span>
+                <span className="text-slate-300 font-medium">Practice Real Holes</span>
               </div>
               <div className="flex items-center gap-1.5 bg-slate-800/50 backdrop-blur-sm px-3 py-1.5 rounded-full border border-blue-500/20">
                 <Users className="w-3.5 h-3.5 text-blue-400" />
