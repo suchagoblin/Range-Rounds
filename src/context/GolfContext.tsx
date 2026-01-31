@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Round, Hole, Shot, ClubName, Direction, Profile, ClubInBag, ClubType, BestRound, GameType, Competition } from '../types/golf';
+import { createContext, useContext, useState, useEffect, useMemo, useCallback, ReactNode } from 'react';
+import { Round, Hole, Shot, ClubName, Direction, Profile, ClubInBag, ClubType, BestRound, GameType, Competition, RoundSummary, SavedCourse, LeaderboardEntry, ActiveParticipant, HazardLocation, HazardType, CommunityLeaderboardEntry } from '../types/golf';
 import { calculateShotResult, generateHoles } from '../utils/golfLogic';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './AuthContext';
@@ -27,19 +27,20 @@ interface GolfContextType {
   deleteClub: (clubId: string) => Promise<void>;
   getSuggestedClub: (distance: number) => ClubName | null;
   loadRound: (roundId: string) => Promise<void>;
-  getPastRounds: () => Promise<any[]>;
+  getPastRounds: () => Promise<RoundSummary[]>;
   deleteRound: (roundId: string) => Promise<void>;
   getBestRounds: (limit?: number) => Promise<BestRound[]>;
   saveCurrentCourse: (name: string, description?: string) => Promise<string | null>;
-  getSavedCourses: () => Promise<any[]>;
+  getSavedCourses: () => Promise<SavedCourse[]>;
   deleteCourse: (courseId: string) => Promise<void>;
   shareCourse: (courseId: string) => Promise<string | null>;
   joinSharedCourse: (shareCode: string) => Promise<string | null>;
-  getCourseLeaderboard: (courseId: string) => Promise<any[]>;
-  getActiveParticipants: (courseId: string) => Promise<any[]>;
+  getCourseLeaderboard: (courseId: string) => Promise<LeaderboardEntry[]>;
+  getActiveParticipants: (courseId: string) => Promise<ActiveParticipant[]>;
   updateParticipantActivity: (courseId: string) => Promise<void>;
   addCompetition: (gameType: GameType, betAmount: number) => Promise<void>;
   getCompetition: () => Promise<Competition | null>;
+  getCommunityLeaderboard: (limit?: number) => Promise<CommunityLeaderboardEntry[]>;
   currentCourseId: string | null;
 }
 
@@ -189,7 +190,7 @@ export function GolfProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const getSuggestedClub = (distance: number): ClubName | null => {
+  const getSuggestedClub = useCallback((distance: number): ClubName | null => {
     if (clubs.length === 0) return null;
 
     const sortedClubs = [...clubs].sort((a, b) => b.yardage - a.yardage);
@@ -201,7 +202,7 @@ export function GolfProvider({ children }: { children: ReactNode }) {
     }
 
     return sortedClubs[sortedClubs.length - 1]?.club_name || null;
-  };
+  }, [clubs]);
 
   const startRound = async (holeCount: 3 | 9 | 18, courseId?: string, mulligansAllowed: number = 2) => {
     if (!profile) return;
@@ -220,8 +221,8 @@ export function GolfProvider({ children }: { children: ReactNode }) {
           number: hole.hole_number,
           par: hole.par as 3 | 4 | 5,
           yardage: hole.yardage,
-          hazard: hole.hazard as any,
-          hazardType: hole.hazard_type as any,
+          hazard: hole.hazard as HazardLocation,
+          hazardType: hole.hazard_type as HazardType,
           windSpeed: hole.wind_speed,
           windDir: hole.wind_dir,
           shots: [],
@@ -292,10 +293,10 @@ export function GolfProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const getCurrentHole = (): Hole | null => {
+  const getCurrentHole = useCallback((): Hole | null => {
     if (!round) return null;
     return round.holes[round.currentHoleIndex];
-  };
+  }, [round]);
 
   const recordShot = async (club: ClubName, distance: number, direction: Direction) => {
     if (!round || !currentRoundId) return;
@@ -566,7 +567,7 @@ export function GolfProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const getHoleStats = (holeIndex: number): HoleStats => {
+  const getHoleStats = useCallback((holeIndex: number): HoleStats => {
     if (!round || holeIndex >= round.holes.length) {
       return { strokes: 0, score: 0, scoreName: '-' };
     }
@@ -583,9 +584,9 @@ export function GolfProvider({ children }: { children: ReactNode }) {
     const scoreName = getScoreName(score);
 
     return { strokes: totalStrokes, score, scoreName };
-  };
+  }, [round]);
 
-  const getRoundStats = (): RoundStats => {
+  const getRoundStats = useCallback((): RoundStats => {
     if (!round) {
       return { totalStrokes: 0, totalPar: 0, score: 0, completedHoles: 0 };
     }
@@ -609,7 +610,7 @@ export function GolfProvider({ children }: { children: ReactNode }) {
       score: totalStrokes - totalPar,
       completedHoles,
     };
-  };
+  }, [round, getHoleStats]);
 
   const loadRound = async (roundId: string) => {
     const { data: roundData } = await supabase
@@ -653,8 +654,8 @@ export function GolfProvider({ children }: { children: ReactNode }) {
         number: holeData.hole_number,
         par: holeData.par as 3 | 4 | 5,
         yardage: holeData.yardage,
-        hazard: holeData.hazard as any,
-        hazardType: holeData.hazard_type as any,
+        hazard: holeData.hazard as HazardLocation,
+        hazardType: holeData.hazard_type as HazardType,
         windSpeed: holeData.wind_speed,
         windDir: holeData.wind_dir,
         shots,
@@ -679,7 +680,7 @@ export function GolfProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const getPastRounds = async () => {
+  const getPastRounds = async (): Promise<RoundSummary[]> => {
     if (!profile) return [];
 
     const { data: rounds } = await supabase
@@ -701,7 +702,7 @@ export function GolfProvider({ children }: { children: ReactNode }) {
       .eq('profile_id', profile.id)
       .order('created_at', { ascending: false });
 
-    return rounds || [];
+    return (rounds || []) as RoundSummary[];
   };
 
   const getBestRounds = async (limit: number = 5): Promise<BestRound[]> => {
@@ -741,6 +742,111 @@ export function GolfProvider({ children }: { children: ReactNode }) {
     return data;
   };
 
+  const getCommunityLeaderboard = async (limit: number = 20): Promise<CommunityLeaderboardEntry[]> => {
+    interface RoundData {
+      profile_id: string;
+      total_score: number;
+      hole_count: number;
+      profiles: { id: string; name: string } | null;
+    }
+
+    const { data: rounds } = await supabase
+      .from('rounds')
+      .select(`
+        profile_id,
+        total_score,
+        hole_count,
+        profiles (
+          id,
+          name
+        )
+      `)
+      .eq('is_round_complete', true)
+      .not('total_score', 'is', null);
+
+    if (!rounds || rounds.length === 0) return [];
+
+    // Group rounds by player and calculate stats
+    const playerStats = new Map<string, {
+      profileId: string;
+      profileName: string;
+      rounds: { score: number; holes: number }[];
+    }>();
+
+    (rounds as unknown as RoundData[]).forEach((round) => {
+      const profileId = round.profile_id;
+      const profileName = round.profiles?.name || 'Unknown';
+
+      if (!playerStats.has(profileId)) {
+        playerStats.set(profileId, {
+          profileId,
+          profileName,
+          rounds: [],
+        });
+      }
+
+      playerStats.get(profileId)!.rounds.push({
+        score: round.total_score,
+        holes: round.hole_count,
+      });
+    });
+
+    // Calculate leaderboard entries
+    const leaderboard: CommunityLeaderboardEntry[] = [];
+
+    playerStats.forEach((stats) => {
+      const completedRounds = stats.rounds;
+      if (completedRounds.length === 0) return;
+
+      // Find best score (lowest relative to par, normalized to 18 holes)
+      let bestScore = Infinity;
+      let bestScoreHoles = 18;
+
+      completedRounds.forEach((round) => {
+        // Normalize to per-hole average for comparison
+        const scorePerHole = round.score / round.holes;
+        const bestPerHole = bestScore / bestScoreHoles;
+
+        if (scorePerHole < bestPerHole || bestScore === Infinity) {
+          bestScore = round.score;
+          bestScoreHoles = round.holes;
+        }
+      });
+
+      // Calculate average score (normalized to 18 holes)
+      const totalNormalizedScore = completedRounds.reduce((sum, r) => {
+        return sum + (r.score / r.holes) * 18;
+      }, 0);
+      const averageScore = Math.round((totalNormalizedScore / completedRounds.length) * 10) / 10;
+
+      leaderboard.push({
+        rank: 0, // Will be set after sorting
+        profileId: stats.profileId,
+        profileName: stats.profileName,
+        roundsPlayed: completedRounds.length,
+        bestScore,
+        bestScoreHoles,
+        averageScore,
+        totalRoundsCompleted: completedRounds.length,
+      });
+    });
+
+    // Sort by best score per hole (ascending - lower is better)
+    leaderboard.sort((a, b) => {
+      const aPerHole = a.bestScore / a.bestScoreHoles;
+      const bPerHole = b.bestScore / b.bestScoreHoles;
+      if (aPerHole !== bPerHole) return aPerHole - bPerHole;
+      // Tiebreaker: more rounds played
+      return b.roundsPlayed - a.roundsPlayed;
+    });
+
+    // Assign ranks and limit
+    return leaderboard.slice(0, limit).map((entry, idx) => ({
+      ...entry,
+      rank: idx + 1,
+    }));
+  };
+
   const saveCurrentCourse = async (name: string, description?: string): Promise<string | null> => {
     if (!profile || !round) return null;
 
@@ -775,7 +881,7 @@ export function GolfProvider({ children }: { children: ReactNode }) {
     return null;
   };
 
-  const getSavedCourses = async () => {
+  const getSavedCourses = async (): Promise<SavedCourse[]> => {
     if (!profile) return [];
 
     const { data: courses } = await supabase
@@ -784,7 +890,7 @@ export function GolfProvider({ children }: { children: ReactNode }) {
       .eq('profile_id', profile.id)
       .order('created_at', { ascending: false });
 
-    return courses || [];
+    return (courses || []) as SavedCourse[];
   };
 
   const deleteRound = async (roundId: string) => {
@@ -848,7 +954,22 @@ export function GolfProvider({ children }: { children: ReactNode }) {
     return null;
   };
 
-  const getCourseLeaderboard = async (courseId: string) => {
+  const getCourseLeaderboard = async (courseId: string): Promise<LeaderboardEntry[]> => {
+    interface ParticipantData {
+      profile_id: string;
+      round_id: string;
+      profiles: { name: string } | null;
+      rounds: {
+        is_round_complete: boolean;
+        holes: {
+          par: number;
+          putts: number;
+          is_complete: boolean;
+          shots: { penalty_strokes: number }[];
+        }[];
+      } | null;
+    }
+
     const { data: participants } = await supabase
       .from('course_participants')
       .select(`
@@ -874,15 +995,15 @@ export function GolfProvider({ children }: { children: ReactNode }) {
 
     if (!participants) return [];
 
-    return participants.map((p: any) => {
+    return (participants as unknown as ParticipantData[]).map((p) => {
       let totalStrokes = 0;
       let totalPar = 0;
       let completedHoles = 0;
 
       if (p.rounds && p.rounds.holes) {
-        p.rounds.holes.forEach((hole: any) => {
+        p.rounds.holes.forEach((hole) => {
           if (hole.is_complete) {
-            const shotStrokes = hole.shots.reduce((sum: number, shot: any) => sum + 1 + shot.penalty_strokes, 0);
+            const shotStrokes = hole.shots.reduce((sum, shot) => sum + 1 + shot.penalty_strokes, 0);
             totalStrokes += shotStrokes + hole.putts;
             totalPar += hole.par;
             completedHoles++;
@@ -898,7 +1019,7 @@ export function GolfProvider({ children }: { children: ReactNode }) {
         completedHoles,
         isComplete: p.rounds?.is_round_complete || false,
       };
-    }).sort((a: any, b: any) => {
+    }).sort((a, b) => {
       if (a.completedHoles !== b.completedHoles) {
         return b.completedHoles - a.completedHoles;
       }
@@ -906,7 +1027,13 @@ export function GolfProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const getActiveParticipants = async (courseId: string) => {
+  const getActiveParticipants = async (courseId: string): Promise<ActiveParticipant[]> => {
+    interface ActiveParticipantData {
+      profile_id: string;
+      last_active_at: string;
+      profiles: { name: string } | null;
+    }
+
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
 
     const { data: participants } = await supabase
@@ -924,7 +1051,7 @@ export function GolfProvider({ children }: { children: ReactNode }) {
 
     if (!participants) return [];
 
-    return participants.map((p: any) => ({
+    return (participants as unknown as ActiveParticipantData[]).map((p) => ({
       profileId: p.profile_id,
       profileName: p.profiles?.name || 'Unknown',
       lastActiveAt: p.last_active_at,
@@ -945,11 +1072,11 @@ export function GolfProvider({ children }: { children: ReactNode }) {
       });
   };
 
-  const exitRound = () => {
+  const exitRound = useCallback(() => {
     setRound(null);
     setCurrentRoundId(null);
     setCurrentCourseId(null);
-  };
+  }, []);
 
   useEffect(() => {
     if (!currentCourseId || !profile) return;
@@ -963,45 +1090,52 @@ export function GolfProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(interval);
   }, [currentCourseId, profile]);
 
+  const contextValue = useMemo(() => ({
+    round,
+    profile,
+    clubs,
+    currentRoundId,
+    currentCourseId,
+    startRound,
+    recordShot,
+    finishHole,
+    skipHole,
+    undoLastShot,
+    useMulligan,
+    exitRound,
+    getCurrentHole,
+    getHoleStats,
+    getRoundStats,
+    updateProfile,
+    addClub,
+    updateClub,
+    deleteClub,
+    getSuggestedClub,
+    loadRound,
+    getPastRounds,
+    deleteRound,
+    getBestRounds,
+    saveCurrentCourse,
+    getSavedCourses,
+    deleteCourse,
+    shareCourse,
+    joinSharedCourse,
+    getCourseLeaderboard,
+    getActiveParticipants,
+    updateParticipantActivity,
+    addCompetition,
+    getCompetition,
+    getCommunityLeaderboard,
+  }), [
+    round,
+    profile,
+    clubs,
+    currentRoundId,
+    currentCourseId,
+  ]);
+
   return (
-    <GolfContext.Provider
-      value={{
-        round,
-        profile,
-        clubs,
-        currentRoundId,
-        currentCourseId,
-        startRound,
-        recordShot,
-        finishHole,
-        skipHole,
-        undoLastShot,
-        useMulligan,
-        exitRound,
-        getCurrentHole,
-        getHoleStats,
-        getRoundStats,
-        updateProfile,
-        addClub,
-        updateClub,
-        deleteClub,
-        getSuggestedClub,
-        loadRound,
-        getPastRounds,
-        deleteRound,
-        getBestRounds,
-        saveCurrentCourse,
-        getSavedCourses,
-        deleteCourse,
-        shareCourse,
-        joinSharedCourse,
-        getCourseLeaderboard,
-        getActiveParticipants,
-        updateParticipantActivity,
-        addCompetition,
-        getCompetition,
-      }}
-    >
+    <GolfContext.Provider value={contextValue}>
       {children}
     </GolfContext.Provider>
   );

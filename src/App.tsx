@@ -8,6 +8,7 @@ import ProfileScreen from './components/ProfileScreen';
 import RoundHistory from './components/RoundHistory';
 import CourseManager from './components/CourseManager';
 import RoundSummary from './components/RoundSummary';
+import CommunityLeaderboard from './components/CommunityLeaderboard';
 
 function App() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -16,6 +17,7 @@ function App() {
   const [showHistory, setShowHistory] = useState(false);
   const [showCourses, setShowCourses] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
 
   if (isLoading) {
     return (
@@ -51,12 +53,17 @@ function App() {
     return <CourseManager onBack={() => setShowCourses(false)} />;
   }
 
+  if (showLeaderboard) {
+    return <CommunityLeaderboard onClose={() => setShowLeaderboard(false)} />;
+  }
+
   if (!round) {
     return (
       <SetupScreen
         onOpenProfile={() => setShowProfile(true)}
         onOpenHistory={() => setShowHistory(true)}
         onOpenCourses={() => setShowCourses(true)}
+        onOpenLeaderboard={() => setShowLeaderboard(true)}
       />
     );
   }

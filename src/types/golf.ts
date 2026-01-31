@@ -89,3 +89,56 @@ export interface BestRound {
   hole_count: number;
   course_id?: string;
 }
+
+export interface RoundSummary {
+  id: string;
+  hole_count: number;
+  is_round_complete: boolean;
+  created_at: string;
+  holes: {
+    par: number;
+    putts: number;
+    is_complete: boolean;
+    shots: {
+      penalty_strokes: number;
+    }[];
+  }[];
+}
+
+export interface SavedCourse {
+  id: string;
+  profile_id: string;
+  name: string;
+  description?: string;
+  hole_count: number;
+  is_shared: boolean;
+  share_code?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LeaderboardEntry {
+  profileName: string;
+  totalStrokes: number;
+  totalPar: number;
+  score: number;
+  completedHoles: number;
+  isComplete: boolean;
+}
+
+export interface ActiveParticipant {
+  profileId: string;
+  profileName: string;
+  lastActiveAt: string;
+}
+
+export interface CommunityLeaderboardEntry {
+  rank: number;
+  profileId: string;
+  profileName: string;
+  roundsPlayed: number;
+  bestScore: number;
+  bestScoreHoles: number;
+  averageScore: number;
+  totalRoundsCompleted: number;
+}

@@ -70,11 +70,12 @@ export default function ShotInput({ currentDistance }: ShotInputProps) {
           <p className="text-emerald-100 text-sm">Where did your putt end up?</p>
         </div>
 
-        <div className="grid grid-cols-5 gap-2">
+        <div className="grid grid-cols-5 gap-2" role="group" aria-label="Putt direction options">
           {DIRECTIONS.map((dir) => (
             <button
               key={dir}
               onClick={() => handleAutoPutt(dir)}
+              aria-label={`${dir} - ${dir === 'Middle' ? '2 putts' : '3 putts'}`}
               className={`py-4 px-1 rounded-xl font-bold text-xs transition-all shadow-sm ${
                 dir === 'Middle'
                   ? 'bg-amber-400 text-gray-900 hover:bg-amber-300 border border-amber-500'
@@ -107,18 +108,21 @@ export default function ShotInput({ currentDistance }: ShotInputProps) {
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 space-y-5">
-      <div>
-        <label className="block text-sm font-semibold text-gray-900 mb-3">
+      <fieldset>
+        <legend className="block text-sm font-semibold text-gray-900 mb-3">
           Club Selection
           {selectedClub && getSuggestedClub(currentDistance) === selectedClub && (
             <span className="ml-2 text-xs text-emerald-600 font-normal">(Recommended)</span>
           )}
-        </label>
-        <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto">
+        </legend>
+        <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto" role="radiogroup" aria-label="Select a club">
           {clubs.map((club) => (
             <button
               key={club.id}
               onClick={() => setSelectedClub(club.club_name)}
+              role="radio"
+              aria-checked={selectedClub === club.club_name}
+              aria-label={`${club.club_name}, ${club.yardage} yards${getSuggestedClub(currentDistance) === club.club_name ? ', recommended' : ''}`}
               className={`py-2.5 px-2 rounded-xl font-semibold text-xs transition-all ${
                 selectedClub === club.club_name
                   ? 'bg-emerald-600 text-white shadow-sm border border-emerald-600'
@@ -132,15 +136,18 @@ export default function ShotInput({ currentDistance }: ShotInputProps) {
             </button>
           ))}
         </div>
-      </div>
+      </fieldset>
 
-      <div>
-        <label className="block text-sm font-semibold text-gray-900 mb-3">Direction</label>
-        <div className="grid grid-cols-5 gap-2">
+      <fieldset>
+        <legend className="block text-sm font-semibold text-gray-900 mb-3">Direction</legend>
+        <div className="grid grid-cols-5 gap-2" role="radiogroup" aria-label="Shot direction">
           {DIRECTIONS.map((dir) => (
             <button
               key={dir}
               onClick={() => setSelectedDirection(dir)}
+              role="radio"
+              aria-checked={selectedDirection === dir}
+              aria-label={dir}
               className={`py-3 px-1 rounded-xl font-medium text-xs transition-all ${
                 selectedDirection === dir
                   ? 'bg-blue-600 text-white shadow-sm border border-blue-600'
@@ -151,24 +158,28 @@ export default function ShotInput({ currentDistance }: ShotInputProps) {
             </button>
           ))}
         </div>
-      </div>
+      </fieldset>
 
       <div>
-        <label className="block text-sm font-semibold text-gray-900 mb-3">Distance (yards)</label>
+        <label htmlFor="shot-distance" className="block text-sm font-semibold text-gray-900 mb-3">Distance (yards)</label>
         <input
+          id="shot-distance"
           type="number"
           value={distance}
           onChange={(e) => setDistance(e.target.value)}
           placeholder="Enter distance..."
+          aria-describedby="distance-hint"
           className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-lg font-semibold text-gray-900 placeholder-gray-400 focus:border-emerald-500 focus:outline-none transition-all"
         />
+        <span id="distance-hint" className="sr-only">Enter the distance in yards for your shot</span>
       </div>
 
       <button
         onClick={handleSubmit}
+        aria-label="Record shot with selected club and direction"
         className="w-full py-4 bg-gradient-to-br from-emerald-500 to-green-600 text-white rounded-2xl font-semibold text-base shadow-sm hover:shadow-md transform hover:scale-[1.01] transition-all flex items-center justify-center gap-2 border border-emerald-600"
       >
-        <Send className="w-5 h-5" />
+        <Send className="w-5 h-5" aria-hidden="true" />
         Record Shot
       </button>
     </div>

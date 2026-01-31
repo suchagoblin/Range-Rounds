@@ -33,7 +33,7 @@ export default function GameScreen({ onOpenProfile }: GameScreenProps) {
   const totalShots = currentHole.shots.reduce((sum, shot) => sum + 1 + shot.penaltyStrokes, 0);
 
   return (
-    <div className="min-h-screen bg-topo">
+    <main className="min-h-screen bg-topo" aria-label="Golf game screen">
       {currentCourseId && <ActiveParticipants courseId={currentCourseId} />}
       <div className="max-w-md mx-auto px-4 py-6">
         <div className="mb-6">
@@ -49,13 +49,14 @@ export default function GameScreen({ onOpenProfile }: GameScreenProps) {
               <button
                 onClick={onOpenProfile}
                 className="p-2.5 bg-white rounded-xl shadow-sm hover:shadow-md transition-all border border-gray-200"
-                title="Manage Profile"
+                aria-label="Manage Profile"
               >
-                <User className="w-5 h-5 text-gray-600" />
+                <User className="w-5 h-5 text-gray-600" aria-hidden="true" />
               </button>
               <button
                 onClick={() => setShowScorecard(true)}
                 className="px-4 py-2.5 bg-white rounded-xl shadow-sm hover:shadow-md text-sm font-semibold text-gray-900 transition-all border border-gray-200"
+                aria-label="View scorecard"
               >
                 Scorecard
               </button>
@@ -146,22 +147,24 @@ export default function GameScreen({ onOpenProfile }: GameScreenProps) {
 
         <ShotInput currentDistance={currentDistance} />
 
-        <div className="flex gap-3 mt-4">
+        <div className="flex gap-3 mt-4" role="group" aria-label="Shot actions">
           {currentHole.shots.length > 0 && !currentHole.isComplete && (
             <>
               <button
                 onClick={undoLastShot}
+                aria-label="Undo last shot"
                 className="flex-1 py-3 bg-white border-2 border-gray-200 rounded-2xl font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all flex items-center justify-center gap-2 shadow-sm"
               >
-                <Undo2 className="w-5 h-5" />
+                <Undo2 className="w-5 h-5" aria-hidden="true" />
                 Undo
               </button>
               {round && round.mulligansUsed < round.mulligansAllowed && (
                 <button
                   onClick={useMulligan}
+                  aria-label={`Use mulligan, ${round.mulligansAllowed - round.mulligansUsed} remaining`}
                   className="flex-1 py-3 bg-gradient-to-br from-blue-500 to-blue-600 border border-blue-600 rounded-2xl font-semibold text-white hover:shadow-md transition-all flex items-center justify-center gap-2 shadow-sm"
                 >
-                  <RotateCcw className="w-5 h-5" />
+                  <RotateCcw className="w-5 h-5" aria-hidden="true" />
                   Mulligan
                 </button>
               )}
@@ -170,9 +173,10 @@ export default function GameScreen({ onOpenProfile }: GameScreenProps) {
           {!currentHole.isComplete && (
             <button
               onClick={skipHole}
+              aria-label="Skip current hole"
               className="flex-1 py-3 bg-white border-2 border-amber-200 rounded-2xl font-semibold text-amber-700 hover:bg-amber-50 hover:border-amber-300 transition-all flex items-center justify-center gap-2 shadow-sm"
             >
-              <SkipForward className="w-5 h-5" />
+              <SkipForward className="w-5 h-5" aria-hidden="true" />
               Skip Hole
             </button>
           )}
@@ -211,6 +215,6 @@ export default function GameScreen({ onOpenProfile }: GameScreenProps) {
           </div>
         )}
       </div>
-    </div>
+    </main>
   );
 }
