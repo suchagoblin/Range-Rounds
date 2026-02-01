@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { ClubInBag, ClubName, ClubType, BestRound } from '../types/golf';
-import { Plus, Trash2, Save, User, Trophy, LogOut, Wind, Mail, Info, X, AlertTriangle } from 'lucide-react';
+import { Plus, Trash2, Save, User, Trophy, LogOut, Wind, Mail, Info, X, Star, Zap, Activity } from 'lucide-react';
 import { useGolf } from '../context/GolfContext';
 import { useAuth } from '../context/AuthContext';
 import { SecurityQuestions } from './SecurityQuestions';
 import { supabase } from '../lib/supabase';
-import { showToast } from '../utils/toast';
+import { calculatePlayerStats, PlayerStats } from '../utils/gamification';
 
 interface ProfileScreenProps {
   profileName: string;
@@ -43,8 +43,8 @@ export default function ProfileScreen({
   onDeleteClub,
   onBack
 }: ProfileScreenProps) {
-  const { getBestRounds, deleteRound } = useGolf();
-  const { logout, username, profileId, isGuest } = useAuth();
+  const { getBestRounds, getPastRounds } = useGolf();
+  const { logout, username, profileId } = useAuth();
   const [name, setName] = useState(profileName);
   const [isAddingClub, setIsAddingClub] = useState(false);
   const [selectedType, setSelectedType] = useState<ClubType>('Driver');
@@ -52,6 +52,7 @@ export default function ProfileScreen({
   const [yardage, setYardage] = useState('200');
   const [editingYardages, setEditingYardages] = useState<Record<string, string>>({});
   const [bestRounds, setBestRounds] = useState<BestRound[]>([]);
+  const [playerStats, setPlayerStats] = useState<PlayerStats | null>(null);
   const [localWindEnabled, setLocalWindEnabled] = useState(windEnabled);
   const [localWindSpeed, setLocalWindSpeed] = useState(windSpeed.toString());
   const [localWindDirection, setLocalWindDirection] = useState(windDirection);
@@ -68,13 +69,17 @@ export default function ProfileScreen({
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
-    loadBestRounds();
+    loadData();
     loadRecoveryEmail();
   }, []);
 
-  const loadBestRounds = async () => {
+  const loadData = async () => {
     const rounds = await getBestRounds(5);
     setBestRounds(rounds);
+
+    const history = await getPastRounds();
+    const stats = calculatePlayerStats(history);
+    setPlayerStats(stats);
   };
 
   const loadRecoveryEmail = async () => {
@@ -291,6 +296,107 @@ export default function ProfileScreen({
             </button>
           </div>
 
+
+
+          {playerStats && (
+            <div className="mb-8 p-6 bg-gradient-to-br from-indigo-900/50 to-violet-900/50 rounded-xl border border-indigo-500/30 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
+
+              <div className="flex items-center gap-6 mb-6">
+                <div className="relative">
+                  <div className="w-20 h-20 rounded-full bg-slate-900 border-4 border-indigo-500 flex items-center justify-center relative z-10">
+                    <span className="text-3xl font-black text-white">{playerStats.level}</span>
+                  </div>
+                  <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 z-20 bg-indigo-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full border border-indigo-400">
+                    LEVEL
+                  </div>
+                </div>
+
+                <div className="flex-1">
+                  <div className="flex justify-between items-end mb-2">
+                    <div className="text-sm font-semibold text-indigo-200">Experience</div>
+                    <div className="text-xs text-indigo-300">
+                      <span className="text-white font-bold">{playerStats.currentXp}</span> / {playerStats.nextLevelXp} XP
+                    </div>
+                  </div>
+                  <div className="h-2 bg-slate-900/50 rounded-full overflow-hidden border border-indigo-500/20">
+                    <div
+                      className="h-full bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full transition-all duration-1000 ease-out"
+                      style={{ width: `${playerStats.progressPercent}%` }}
+                    ></div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                <div className="bg-slate-900/50 rounded-lg p-3 text-center border border-indigo-500/10">
+                  <div className="flex items-center justify-center mb-1">
+                    <Activity className="w-4 h-4 text-emerald-400" />
+                  </div>
+                  <div className="text-lg font-bold text-white leading-none">{playerStats.totalHolesPlayed}</div>
+                  <div className="text-[10px] text-indigo-300 uppercase tracking-wider mt-1">Holes</div>
+                </div>
+                <div className="bg-slate-900/50 rounded-lg p-3 text-center border border-indigo-500/10">
+                  <div className="flex items-center justify-center mb-1">
+                    <Zap className="w-4 h-4 text-amber-400" />
+                  </div>
+                  <div className="text-lg font-bold text-white leading-none">{playerStats.totalBirdies}</div>
+                  <div className="text-[10px] text-indigo-300 uppercase tracking-wider mt-1">Birdies</div>
+                </div>
+                <div className="bg-slate-900/50 rounded-lg p-3 text-center border border-indigo-500/10">
+                  <div className="flex items-center justify-center mb-1">
+                    <Star className="w-4 h-4 text-purple-400" />
+                  </div>
+                  <div className="text-lg font-bold text-white leading-none">{playerStats.bestStreak}</div>
+                  <div className="text-[10px] text-indigo-300 uppercase tracking-wider mt-1">Best Streak</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Achievements Section */}
+          {playerStats && 'achievements' in playerStats && (
+            <div className="mb-6">
+              <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
+                <Trophy className="w-5 h-5 text-amber-400" />
+                Achievements
+              </h3>
+              <div className="grid grid-cols-1 gap-3">
+                {(playerStats as any).achievements.map((ach: any) => (
+                  <div
+                    key={ach.id}
+                    className={`p-3 rounded-xl border flex items-center gap-3 transition-colors ${ach.unlocked
+                        ? 'bg-slate-800/80 border-indigo-500/30'
+                        : 'bg-slate-900/40 border-slate-800 opacity-60'
+                      }`}
+                  >
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl ${ach.unlocked
+                        ? 'bg-indigo-500/20 border border-indigo-500/30'
+                        : 'bg-slate-800 border border-slate-700 grayscale'
+                      }`}>
+                      {ach.icon}
+                    </div>
+                    <div>
+                      <div className={`text-sm font-bold ${ach.unlocked ? 'text-white' : 'text-slate-400'}`}>
+                        {ach.title}
+                      </div>
+                      <div className="text-xs text-slate-500">
+                        {ach.description}
+                      </div>
+                    </div>
+                    {ach.unlocked && (
+                      <div className="ml-auto">
+                        <div className="bg-emerald-500/20 text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-500/30">
+                          UNLOCKED
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="mb-6">
             <label className="block text-sm font-semibold text-slate-300 mb-2">
               Username
@@ -323,14 +429,12 @@ export default function ProfileScreen({
               </div>
               <button
                 onClick={() => setLocalWindEnabled(!localWindEnabled)}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  localWindEnabled ? 'bg-emerald-500' : 'bg-slate-600'
-                }`}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${localWindEnabled ? 'bg-emerald-500' : 'bg-slate-600'
+                  }`}
               >
                 <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    localWindEnabled ? 'translate-x-6' : 'translate-x-1'
-                  }`}
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${localWindEnabled ? 'translate-x-6' : 'translate-x-1'
+                    }`}
                 />
               </button>
             </div>
@@ -456,14 +560,12 @@ export default function ProfileScreen({
             )}
 
             {emailMessage && (
-              <div className={`p-3 rounded-lg ${
-                emailMessage.type === 'success'
-                  ? 'bg-emerald-500/20 border border-emerald-500/30'
-                  : 'bg-red-500/20 border border-red-500/30'
-              }`}>
-                <p className={`text-sm text-center ${
-                  emailMessage.type === 'success' ? 'text-emerald-400' : 'text-red-400'
+              <div className={`p-3 rounded-lg ${emailMessage.type === 'success'
+                ? 'bg-emerald-500/20 border border-emerald-500/30'
+                : 'bg-red-500/20 border border-red-500/30'
                 }`}>
+                <p className={`text-sm text-center ${emailMessage.type === 'success' ? 'text-emerald-400' : 'text-red-400'
+                  }`}>
                   {emailMessage.text}
                 </p>
               </div>
@@ -471,46 +573,40 @@ export default function ProfileScreen({
           </div>
         </div>
 
-        {bestRounds.length > 0 && (
-          <div className="bg-slate-800/80 backdrop-blur-sm rounded-2xl border border-slate-700 p-6 mb-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Trophy className="w-6 h-6 text-amber-400" />
-              <h2 className="text-xl font-bold text-white">Best Rounds</h2>
-            </div>
-            <div className="space-y-3">
-              {bestRounds.map((round, index) => (
-                <div
-                  key={round.id}
-                  className="flex items-center justify-between p-3 bg-gradient-to-r from-amber-500/10 to-amber-400/5 rounded-lg border border-amber-500/20"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`flex items-center justify-center w-8 h-8 rounded-full font-bold text-sm ${
-                      index === 0 ? 'bg-amber-400 text-amber-900' :
-                      index === 1 ? 'bg-slate-400 text-slate-900' :
-                      index === 2 ? 'bg-amber-600 text-white' :
-                      'bg-slate-600 text-slate-300'
-                    }`}>
-                      {index + 1}
-                    </div>
-                    <div>
-                      <div className="font-bold text-white text-lg">{round.total_score} strokes</div>
-                      <div className="text-xs text-slate-400">
-                        {new Date(round.created_at).toLocaleDateString()} • {round.hole_count} holes
+        {
+          bestRounds.length > 0 && (
+            <div className="bg-slate-800/80 backdrop-blur-sm rounded-2xl border border-slate-700 p-6 mb-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Trophy className="w-6 h-6 text-amber-400" />
+                <h2 className="text-xl font-bold text-white">Best Rounds</h2>
+              </div>
+              <div className="space-y-3">
+                {bestRounds.map((round, index) => (
+                  <div
+                    key={round.id}
+                    className="flex items-center justify-between p-3 bg-gradient-to-r from-amber-500/10 to-amber-400/5 rounded-lg border border-amber-500/20"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`flex items-center justify-center w-8 h-8 rounded-full font-bold text-sm ${index === 0 ? 'bg-amber-400 text-amber-900' :
+                        index === 1 ? 'bg-slate-400 text-slate-900' :
+                          index === 2 ? 'bg-amber-600 text-white' :
+                            'bg-slate-600 text-slate-300'
+                        }`}>
+                        {index + 1}
+                      </div>
+                      <div>
+                        <div className="font-bold text-white text-lg">{round.total_score} strokes</div>
+                        <div className="text-xs text-slate-400">
+                          {new Date(round.created_at).toLocaleDateString()} • {round.hole_count} holes
+                        </div>
                       </div>
                     </div>
                   </div>
-                  <button
-                    onClick={() => handleDeleteBestRound(round.id)}
-                    className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors"
-                    title="Delete this round"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )
+        }
 
         <div className="bg-slate-800/80 backdrop-blur-sm rounded-2xl border border-slate-700 p-6">
           <div className="flex items-center justify-between mb-6">
@@ -672,77 +768,7 @@ export default function ProfileScreen({
             </div>
           )}
         </div>
-
-        {!isGuest && (
-          <div className="bg-slate-800/80 backdrop-blur-sm rounded-2xl border border-red-500/30 p-6 mt-6">
-            <div className="flex items-center gap-2 mb-4">
-              <AlertTriangle className="w-6 h-6 text-red-400" />
-              <h2 className="text-xl font-bold text-red-400">Danger Zone</h2>
-            </div>
-
-            {!showDeleteConfirm ? (
-              <div>
-                <p className="text-slate-400 text-sm mb-4">
-                  Permanently delete your account and all associated data. This action cannot be undone.
-                </p>
-                <button
-                  onClick={() => setShowDeleteConfirm(true)}
-                  className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors font-medium border border-red-500/30"
-                >
-                  Delete My Account
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
-                  <p className="text-red-400 font-medium mb-2">This will permanently delete:</p>
-                  <ul className="text-sm text-slate-400 list-disc list-inside space-y-1">
-                    <li>Your profile and settings</li>
-                    <li>All your rounds and scores</li>
-                    <li>Your saved courses</li>
-                    <li>Your club bag configuration</li>
-                    <li>Security questions and recovery email</li>
-                  </ul>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-slate-300 mb-2">
-                    Type DELETE to confirm
-                  </label>
-                  <input
-                    type="text"
-                    value={deleteConfirmText}
-                    onChange={(e) => setDeleteConfirmText(e.target.value)}
-                    placeholder="DELETE"
-                    className="w-full px-4 py-2 bg-slate-900 border-2 border-red-500/30 rounded-lg text-white placeholder-slate-500 focus:border-red-500 focus:outline-none"
-                    disabled={isDeleting}
-                  />
-                </div>
-
-                <div className="flex gap-3">
-                  <button
-                    onClick={handleDeleteAccount}
-                    disabled={deleteConfirmText !== 'DELETE' || isDeleting}
-                    className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isDeleting ? 'Deleting...' : 'Permanently Delete Account'}
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowDeleteConfirm(false);
-                      setDeleteConfirmText('');
-                    }}
-                    disabled={isDeleting}
-                    className="px-4 py-2 bg-slate-700 text-slate-300 rounded-lg hover:bg-slate-600 transition-colors font-medium border border-slate-600 disabled:opacity-50"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
+      </div >
+    </div >
   );
 }

@@ -30,8 +30,7 @@ export default function ShotInput({ currentDistance }: ShotInputProps) {
     }
   }, [currentDistance, getSuggestedClub]);
 
-  const handleAutoPutt = (direction: Direction) => {
-    const putts = direction === 'Middle' ? 2 : 3;
+  const handleAutoPutt = (putts: number) => {
     finishHole(putts);
   };
 
@@ -67,31 +66,43 @@ export default function ShotInput({ currentDistance }: ShotInputProps) {
             <Target className="w-7 h-7 text-white" />
           </div>
           <h3 className="text-xl font-bold text-white mb-1">On the Green!</h3>
-          <p className="text-emerald-100 text-sm">Where did your ball end up?</p>
+          <p className="text-emerald-100 text-sm">How many putts to hole out?</p>
         </div>
 
-        <div className="grid grid-cols-5 gap-2" role="group" aria-label="Putt direction options">
-          {DIRECTIONS.map((dir) => (
-            <button
-              key={dir}
-              onClick={() => handleAutoPutt(dir)}
-              aria-label={`${dir} - ${dir === 'Middle' ? '2 putts' : '3 putts'}`}
-              className={`py-4 px-1 rounded-xl font-bold text-xs transition-all ${
-                dir === 'Middle'
-                  ? 'bg-amber-400 text-slate-900 hover:bg-amber-300 border border-amber-300 glow-amber'
-                  : 'bg-slate-800 text-white hover:bg-slate-700 border border-slate-600'
-              }`}
-            >
-              {dir === 'Wide Left' ? 'W.L' : dir === 'Wide Right' ? 'W.R' : dir.charAt(0)}
-              <div className="text-xs mt-1 font-normal opacity-75">
-                {dir === 'Middle' ? '+2' : '+3'}
-              </div>
-            </button>
-          ))}
+        <div className="grid grid-cols-3 gap-3" role="group" aria-label="Select number of putts">
+          <button
+            onClick={() => handleAutoPutt(1)}
+            aria-label="1 Putt - Great Job"
+            className="py-6 px-2 rounded-xl border border-emerald-300/30 bg-emerald-800/20 hover:bg-emerald-800/40 transition-all group"
+          >
+            <div className="text-3xl font-bold text-white mb-1 group-hover:scale-110 transition-transform">1</div>
+            <div className="text-xs font-medium text-emerald-100 uppercase tracking-wider">Putt</div>
+            <div className="text-[10px] text-emerald-200/70 mt-1">Birdie Chance!</div>
+          </button>
+
+          <button
+            onClick={() => handleAutoPutt(2)}
+            aria-label="2 Putts - Good"
+            className="py-6 px-2 rounded-xl border border-emerald-300/30 bg-emerald-800/20 hover:bg-emerald-800/40 transition-all group"
+          >
+            <div className="text-3xl font-bold text-white mb-1 group-hover:scale-110 transition-transform">2</div>
+            <div className="text-xs font-medium text-emerald-100 uppercase tracking-wider">Putts</div>
+            <div className="text-[10px] text-emerald-200/70 mt-1">Standard</div>
+          </button>
+
+          <button
+            onClick={() => handleAutoPutt(3)}
+            aria-label="3 Putts - Tough Green"
+            className="py-6 px-2 rounded-xl border border-emerald-300/30 bg-emerald-800/20 hover:bg-emerald-800/40 transition-all group"
+          >
+            <div className="text-3xl font-bold text-white mb-1 group-hover:scale-110 transition-transform">3</div>
+            <div className="text-xs font-medium text-emerald-100 uppercase tracking-wider">Putts</div>
+            <div className="text-[10px] text-emerald-200/70 mt-1">Tough Lie</div>
+          </button>
         </div>
 
-        <div className="text-center text-xs text-emerald-100 mt-2">
-          Middle: 2 putts | Others: 3 putts
+        <div className="text-center text-xs text-emerald-100/60 mt-2">
+          Be honest! Your putting average contributes to your stats.
         </div>
       </div>
     );

@@ -801,7 +801,9 @@ export function GolfProvider({ children }: { children: ReactNode }) {
           putts,
           is_complete,
           shots (
-            penalty_strokes
+            penalty_strokes,
+            final_distance,
+            club
           )
         )
       `)

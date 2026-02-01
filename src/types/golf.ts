@@ -104,6 +104,8 @@ export interface RoundSummary {
     is_complete: boolean;
     shots: {
       penalty_strokes: number;
+      final_distance: number;
+      club: string;
     }[];
   }[];
 }
