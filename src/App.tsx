@@ -9,6 +9,7 @@ import RoundHistory from './components/RoundHistory';
 import CourseManager from './components/CourseManager';
 import RoundSummary from './components/RoundSummary';
 import CommunityLeaderboard from './components/CommunityLeaderboard';
+import DrillsScreen from './components/DrillsScreen';
 import { GuestBanner } from './components/GuestBanner';
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
   const [showCourses, setShowCourses] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [showDrills, setShowDrills] = useState(false);
 
   if (isLoading) {
     return (
@@ -91,6 +93,10 @@ function App() {
     return withGuestBanner(<CommunityLeaderboard onClose={() => setShowLeaderboard(false)} />);
   }
 
+  if (showDrills) {
+    return withGuestBanner(<DrillsScreen onBack={() => setShowDrills(false)} />);
+  }
+
   if (!round) {
     return withGuestBanner(
       <SetupScreen
@@ -98,6 +104,7 @@ function App() {
         onOpenHistory={() => setShowHistory(true)}
         onOpenCourses={() => setShowCourses(true)}
         onOpenLeaderboard={() => setShowLeaderboard(true)}
+        onOpenDrills={() => setShowDrills(true)}
       />
     );
   }

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useGolf } from '../context/GolfContext';
-import { Flag, Wind, User, History, BookOpen, Users, X, DollarSign, Trophy, MapPin } from 'lucide-react';
+import { Flag, Wind, User, History, BookOpen, Users, X, DollarSign, Trophy, MapPin, Zap } from 'lucide-react';
 import { generateHoles } from '../utils/golfLogic';
 import { supabase } from '../lib/supabase';
 import { GameType } from '../types/golf';
@@ -12,6 +12,7 @@ interface SetupScreenProps {
   onOpenHistory: () => void;
   onOpenCourses: () => void;
   onOpenLeaderboard: () => void;
+  onOpenDrills: () => void;
 }
 
 interface FamousCourse {
@@ -20,7 +21,7 @@ interface FamousCourse {
   description: string;
 }
 
-export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourses, onOpenLeaderboard }: SetupScreenProps) {
+export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourses, onOpenLeaderboard, onOpenDrills }: SetupScreenProps) {
   const { startRound, shareCourse, joinSharedCourse, profile, addCompetition } = useGolf();
   const [showMultiplayerDialog, setShowMultiplayerDialog] = useState(false);
   const [showCompetitionDialog, setShowCompetitionDialog] = useState(false);
@@ -293,6 +294,14 @@ export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourse
               >
                 <User className="w-5 h-5 text-slate-300" aria-hidden="true" />
               </button>
+              <button
+                onClick={onOpenDrills}
+                className="p-2.5 bg-emerald-500/10 rounded-xl hover:bg-emerald-500/20 transition-all border border-emerald-500/20"
+                title="Training Drills"
+                aria-label="Training drills"
+              >
+                <Zap className="w-5 h-5 text-emerald-400" aria-hidden="true" />
+              </button>
             </div>
           </div>
 
@@ -483,11 +492,10 @@ export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourse
                             setHoleCount(holes);
                             setMulligans(getDefaultMulligans(holes));
                           }}
-                          className={`py-3 rounded-lg font-semibold transition-all ${
-                            holeCount === count
-                              ? 'bg-emerald-500 text-white border border-emerald-400 glow-green-sm'
-                              : 'bg-slate-700 text-slate-300 hover:bg-slate-600 border border-slate-600'
-                          }`}
+                          className={`py-3 rounded-lg font-semibold transition-all ${holeCount === count
+                            ? 'bg-emerald-500 text-white border border-emerald-400 glow-green-sm'
+                            : 'bg-slate-700 text-slate-300 hover:bg-slate-600 border border-slate-600'
+                            }`}
                         >
                           {count}
                         </button>
@@ -578,11 +586,10 @@ export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourse
                   <div className="space-y-2">
                     <button
                       onClick={() => setGameType('stroke_play')}
-                      className={`w-full py-3 rounded-lg font-semibold transition-all ${
-                        gameType === 'stroke_play'
-                          ? 'bg-emerald-500 text-white border border-emerald-400 glow-green-sm'
-                          : 'bg-slate-700 text-slate-300 hover:bg-slate-600 border border-slate-600'
-                      }`}
+                      className={`w-full py-3 rounded-lg font-semibold transition-all ${gameType === 'stroke_play'
+                        ? 'bg-emerald-500 text-white border border-emerald-400 glow-green-sm'
+                        : 'bg-slate-700 text-slate-300 hover:bg-slate-600 border border-slate-600'
+                        }`}
                     >
                       Stroke Play (No Betting)
                     </button>
@@ -590,11 +597,10 @@ export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourse
                       <>
                         <button
                           onClick={() => setGameType('skins')}
-                          className={`w-full py-3 rounded-lg font-semibold transition-all ${
-                            gameType === 'skins'
-                              ? 'bg-amber-500 text-white border border-amber-400 glow-amber'
-                              : 'bg-slate-700 text-slate-300 hover:bg-slate-600 border border-slate-600'
-                          }`}
+                          className={`w-full py-3 rounded-lg font-semibold transition-all ${gameType === 'skins'
+                            ? 'bg-amber-500 text-white border border-amber-400 glow-amber'
+                            : 'bg-slate-700 text-slate-300 hover:bg-slate-600 border border-slate-600'
+                            }`}
                         >
                           <div className="flex items-center justify-center gap-2">
                             <DollarSign className="w-4 h-4" />
@@ -603,11 +609,10 @@ export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourse
                         </button>
                         <button
                           onClick={() => setGameType('nassau')}
-                          className={`w-full py-3 rounded-lg font-semibold transition-all ${
-                            gameType === 'nassau'
-                              ? 'bg-blue-500 text-white border border-blue-400 glow-blue'
-                              : 'bg-slate-700 text-slate-300 hover:bg-slate-600 border border-slate-600'
-                          }`}
+                          className={`w-full py-3 rounded-lg font-semibold transition-all ${gameType === 'nassau'
+                            ? 'bg-blue-500 text-white border border-blue-400 glow-blue'
+                            : 'bg-slate-700 text-slate-300 hover:bg-slate-600 border border-slate-600'
+                            }`}
                         >
                           <div className="flex items-center justify-center gap-2">
                             <DollarSign className="w-4 h-4" />
