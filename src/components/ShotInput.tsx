@@ -67,7 +67,7 @@ export default function ShotInput({ currentDistance }: ShotInputProps) {
             <Target className="w-7 h-7 text-white" />
           </div>
           <h3 className="text-xl font-bold text-white mb-1">On the Green!</h3>
-          <p className="text-emerald-100 text-sm">Where did your putt end up?</p>
+          <p className="text-emerald-100 text-sm">Where did your ball end up?</p>
         </div>
 
         <div className="grid grid-cols-5 gap-2" role="group" aria-label="Putt direction options">

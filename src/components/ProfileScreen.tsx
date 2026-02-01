@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { ClubInBag, ClubName, ClubType, BestRound } from '../types/golf';
-import { Plus, Trash2, Save, User, Trophy, LogOut, Wind, Mail, Info, X } from 'lucide-react';
+import { Plus, Trash2, Save, User, Trophy, LogOut, Wind, Mail, Info, X, AlertTriangle } from 'lucide-react';
 import { useGolf } from '../context/GolfContext';
 import { useAuth } from '../context/AuthContext';
 import { SecurityQuestions } from './SecurityQuestions';
 import { supabase } from '../lib/supabase';
+import { showToast } from '../utils/toast';
 
 interface ProfileScreenProps {
   profileName: string;
@@ -42,8 +43,8 @@ export default function ProfileScreen({
   onDeleteClub,
   onBack
 }: ProfileScreenProps) {
-  const { getBestRounds } = useGolf();
-  const { logout, username, profileId } = useAuth();
+  const { getBestRounds, deleteRound } = useGolf();
+  const { logout, username, profileId, isGuest } = useAuth();
   const [name, setName] = useState(profileName);
   const [isAddingClub, setIsAddingClub] = useState(false);
   const [selectedType, setSelectedType] = useState<ClubType>('Driver');
@@ -60,6 +61,11 @@ export default function ProfileScreen({
   const [savedRecoveryEmail, setSavedRecoveryEmail] = useState<string | null>(null);
   const [emailSaving, setEmailSaving] = useState(false);
   const [emailMessage, setEmailMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // Account deletion state
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     loadBestRounds();
@@ -147,6 +153,80 @@ export default function ProfileScreen({
   const handleSaveName = () => {
     if (name.trim()) {
       onUpdateProfile(name.trim());
+    }
+  };
+
+  const handleDeleteBestRound = async (roundId: string) => {
+    await deleteRound(roundId);
+    await loadBestRounds();
+    showToast('Round deleted', 'success');
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== 'DELETE' || !profileId) return;
+
+    setIsDeleting(true);
+
+    try {
+      // Delete all user data in order (respecting foreign key constraints)
+      // 1. Delete shots (via holes)
+      const { data: rounds } = await supabase
+        .from('rounds')
+        .select('id')
+        .eq('profile_id', profileId);
+
+      if (rounds) {
+        for (const round of rounds) {
+          const { data: holes } = await supabase
+            .from('holes')
+            .select('id')
+            .eq('round_id', round.id);
+
+          if (holes) {
+            for (const hole of holes) {
+              await supabase.from('shots').delete().eq('hole_id', hole.id);
+              await supabase.from('hole_mulligans').delete().eq('hole_id', hole.id);
+            }
+          }
+          await supabase.from('holes').delete().eq('round_id', round.id);
+          await supabase.from('competitions').delete().eq('round_id', round.id);
+        }
+      }
+
+      // 2. Delete rounds
+      await supabase.from('rounds').delete().eq('profile_id', profileId);
+
+      // 3. Delete course participants
+      await supabase.from('course_participants').delete().eq('profile_id', profileId);
+
+      // 4. Delete courses (and their holes)
+      const { data: courses } = await supabase
+        .from('courses')
+        .select('id')
+        .eq('profile_id', profileId);
+
+      if (courses) {
+        for (const course of courses) {
+          await supabase.from('course_holes').delete().eq('course_id', course.id);
+        }
+      }
+      await supabase.from('courses').delete().eq('profile_id', profileId);
+
+      // 5. Delete clubs
+      await supabase.from('clubs').delete().eq('profile_id', profileId);
+
+      // 6. Delete security answers
+      await supabase.from('profile_security_answers').delete().eq('profile_id', profileId);
+
+      // 7. Finally delete the profile
+      await supabase.from('profiles').delete().eq('id', profileId);
+
+      showToast('Account deleted successfully', 'success');
+      logout();
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      showToast('Failed to delete account. Please try again.', 'error');
+      setIsDeleting(false);
     }
   };
 
@@ -399,6 +479,13 @@ export default function ProfileScreen({
                       </div>
                     </div>
                   </div>
+                  <button
+                    onClick={() => handleDeleteBestRound(round.id)}
+                    className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors"
+                    title="Delete this round"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
               ))}
             </div>
@@ -565,6 +652,76 @@ export default function ProfileScreen({
             </div>
           )}
         </div>
+
+        {!isGuest && (
+          <div className="bg-slate-800/80 backdrop-blur-sm rounded-2xl border border-red-500/30 p-6 mt-6">
+            <div className="flex items-center gap-2 mb-4">
+              <AlertTriangle className="w-6 h-6 text-red-400" />
+              <h2 className="text-xl font-bold text-red-400">Danger Zone</h2>
+            </div>
+
+            {!showDeleteConfirm ? (
+              <div>
+                <p className="text-slate-400 text-sm mb-4">
+                  Permanently delete your account and all associated data. This action cannot be undone.
+                </p>
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors font-medium border border-red-500/30"
+                >
+                  Delete My Account
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+                  <p className="text-red-400 font-medium mb-2">This will permanently delete:</p>
+                  <ul className="text-sm text-slate-400 list-disc list-inside space-y-1">
+                    <li>Your profile and settings</li>
+                    <li>All your rounds and scores</li>
+                    <li>Your saved courses</li>
+                    <li>Your club bag configuration</li>
+                    <li>Security questions and recovery email</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-300 mb-2">
+                    Type DELETE to confirm
+                  </label>
+                  <input
+                    type="text"
+                    value={deleteConfirmText}
+                    onChange={(e) => setDeleteConfirmText(e.target.value)}
+                    placeholder="DELETE"
+                    className="w-full px-4 py-2 bg-slate-900 border-2 border-red-500/30 rounded-lg text-white placeholder-slate-500 focus:border-red-500 focus:outline-none"
+                    disabled={isDeleting}
+                  />
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={handleDeleteAccount}
+                    disabled={deleteConfirmText !== 'DELETE' || isDeleting}
+                    className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isDeleting ? 'Deleting...' : 'Permanently Delete Account'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowDeleteConfirm(false);
+                      setDeleteConfirmText('');
+                    }}
+                    disabled={isDeleting}
+                    className="px-4 py-2 bg-slate-700 text-slate-300 rounded-lg hover:bg-slate-600 transition-colors font-medium border border-slate-600 disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
