@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Lock, User, UserPlus, KeyRound, ArrowLeft, Shield, HelpCircle } from 'lucide-react';
+import { Lock, User, UserPlus, KeyRound, ArrowLeft, Shield, HelpCircle, Clock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { validateUsername, validatePin } from '../utils/validation';
 import { supabase } from '../lib/supabase';
@@ -7,7 +7,7 @@ import { supabase } from '../lib/supabase';
 type AuthMode = 'login' | 'signup' | 'recovery-choice' | 'recovery-pin' | 'recovery-username' | 'recovery-question' | 'recovery-newpin' | 'recovery-show-username';
 
 export function AuthScreen() {
-  const { login, signup } = useAuth();
+  const { login, signup, continueAsGuest } = useAuth();
   const [mode, setMode] = useState<AuthMode>('login');
   const [username, setUsername] = useState('');
   const [pin, setPin] = useState('');
@@ -808,6 +808,22 @@ export function AuthScreen() {
               {mode === 'signup'
                 ? 'Already have an account? Sign in'
                 : "Don't have an account? Sign up"}
+            </button>
+          </div>
+
+          <div className="mt-6 pt-6 border-t border-slate-700">
+            <button
+              onClick={continueAsGuest}
+              disabled={isLoading}
+              className="w-full p-3 bg-slate-700/50 hover:bg-slate-700 border border-slate-600 rounded-lg transition-colors"
+            >
+              <div className="flex items-center justify-center gap-2 text-slate-300">
+                <Clock className="w-4 h-4" />
+                <span className="font-medium">Continue as Guest</span>
+              </div>
+              <p className="text-xs text-slate-500 mt-1">
+                Try it out - data expires in 1 hour and won't be saved
+              </p>
             </button>
           </div>
         </div>
