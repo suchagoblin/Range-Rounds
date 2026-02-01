@@ -119,11 +119,10 @@ export function AuthScreen() {
     setError('');
 
     try {
-      const { data, error: findError } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('recovery_email', recoveryEmail.toLowerCase().trim())
-        .maybeSingle();
+      // Use RPC function that hashes the email and looks up the hash
+      const { data: username, error: findError } = await supabase.rpc('find_username_by_email', {
+        input_email: recoveryEmail.trim()
+      });
 
       if (findError) {
         setError('An error occurred. Please try again.');
@@ -131,13 +130,13 @@ export function AuthScreen() {
         return;
       }
 
-      if (!data) {
+      if (!username) {
         setError('No account found with that email. Make sure you added a recovery email in your profile settings.');
         setIsLoading(false);
         return;
       }
 
-      setRecoveredUsername(data.username);
+      setRecoveredUsername(username);
       setMode('recovery-show-username');
     } catch (err) {
       setError('An error occurred. Please try again.');
