@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Lock, User, UserPlus, KeyRound, ArrowLeft, Shield, HelpCircle, Clock } from 'lucide-react';
+import { Lock, User, UserPlus, KeyRound, ArrowLeft, Shield, HelpCircle, Clock, Mail } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { validateUsername, validatePin } from '../utils/validation';
 import { supabase } from '../lib/supabase';
@@ -16,11 +16,9 @@ export function AuthScreen() {
   const [isLoading, setIsLoading] = useState(false);
 
   // Recovery state
-  const [recoveryType, setRecoveryType] = useState<'pin' | 'username'>('pin');
   const [recoveryQuestion, setRecoveryQuestion] = useState<{ id: string; text: string } | null>(null);
   const [recoveryAnswer, setRecoveryAnswer] = useState('');
-  const [selectedQuestionId, setSelectedQuestionId] = useState<string>('');
-  const [allQuestions, setAllQuestions] = useState<{ id: string; question: string }[]>([]);
+  const [recoveryEmail, setRecoveryEmail] = useState('');
   const [recoveredUsername, setRecoveredUsername] = useState('');
 
   const handlePinInput = (digit: string) => {
@@ -84,7 +82,7 @@ export function AuthScreen() {
         .rpc('has_security_questions', { p_username: username });
 
       if (!hasQuestions) {
-        setError('No security question set up for this account. Please contact support or create a new account.');
+        setError('No security question set up for this account. Please create a new account.');
         setIsLoading(false);
         return;
       }
@@ -102,7 +100,6 @@ export function AuthScreen() {
         id: questionData[0].question_id,
         text: questionData[0].question_text
       });
-      setRecoveryType('pin');
       setMode('recovery-question');
     } catch (err) {
       setError('An error occurred. Please try again.');
@@ -112,35 +109,9 @@ export function AuthScreen() {
     }
   };
 
-  const handleStartUsernameRecovery = async () => {
-    setIsLoading(true);
-    setError('');
-
-    try {
-      // Load all security questions
-      const { data: questions } = await supabase
-        .from('security_questions')
-        .select('id, question')
-        .order('display_order');
-
-      if (questions && questions.length > 0) {
-        setAllQuestions(questions);
-        setSelectedQuestionId(questions[0].id);
-        setMode('recovery-username');
-      } else {
-        setError('Could not load security questions. Please try again.');
-      }
-    } catch (err) {
-      setError('An error occurred. Please try again.');
-      console.error('Username recovery error:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleFindUsername = async () => {
-    if (!recoveryAnswer.trim()) {
-      setError('Please enter your answer');
+  const handleFindUsernameByEmail = async () => {
+    if (!recoveryEmail.trim() || !recoveryEmail.includes('@')) {
+      setError('Please enter a valid email address');
       return;
     }
 
@@ -149,18 +120,24 @@ export function AuthScreen() {
 
     try {
       const { data, error: findError } = await supabase
-        .rpc('find_username_by_security_answer', {
-          p_question_id: selectedQuestionId,
-          p_answer: recoveryAnswer
-        });
+        .from('profiles')
+        .select('username')
+        .eq('recovery_email', recoveryEmail.toLowerCase().trim())
+        .maybeSingle();
 
-      if (findError || !data) {
-        setError('No account found with that answer. Please try a different question or check your answer.');
+      if (findError) {
+        setError('An error occurred. Please try again.');
         setIsLoading(false);
         return;
       }
 
-      setRecoveredUsername(data);
+      if (!data) {
+        setError('No account found with that email. Make sure you added a recovery email in your profile settings.');
+        setIsLoading(false);
+        return;
+      }
+
+      setRecoveredUsername(data.username);
       setMode('recovery-show-username');
     } catch (err) {
       setError('An error occurred. Please try again.');
@@ -245,7 +222,7 @@ export function AuthScreen() {
     setError('');
     setRecoveryQuestion(null);
     setRecoveryAnswer('');
-    setSelectedQuestionId('');
+    setRecoveryEmail('');
     setRecoveredUsername('');
   };
 
@@ -260,6 +237,7 @@ export function AuthScreen() {
     } else if (mode === 'recovery-pin' || mode === 'recovery-username') {
       setMode('recovery-choice');
       setRecoveryAnswer('');
+      setRecoveryEmail('');
     } else if (mode === 'recovery-show-username') {
       setMode('login');
       setUsername(recoveredUsername);
@@ -309,21 +287,20 @@ export function AuthScreen() {
                 <KeyRound className="w-5 h-5 text-violet-400" />
                 <div>
                   <div className="font-semibold text-white">I forgot my PIN</div>
-                  <div className="text-sm text-slate-400">Reset your PIN using your security question</div>
+                  <div className="text-sm text-slate-400">Reset using your security question</div>
                 </div>
               </div>
             </button>
 
             <button
-              onClick={handleStartUsernameRecovery}
-              disabled={isLoading}
-              className="w-full p-4 bg-slate-700/50 hover:bg-slate-700 border border-slate-600 rounded-lg text-left transition-colors disabled:opacity-50"
+              onClick={() => setMode('recovery-username')}
+              className="w-full p-4 bg-slate-700/50 hover:bg-slate-700 border border-slate-600 rounded-lg text-left transition-colors"
             >
               <div className="flex items-center gap-3">
-                <User className="w-5 h-5 text-violet-400" />
+                <Mail className="w-5 h-5 text-violet-400" />
                 <div>
                   <div className="font-semibold text-white">I forgot my username</div>
-                  <div className="text-sm text-slate-400">Find your username using your security question</div>
+                  <div className="text-sm text-slate-400">Look up using your recovery email</div>
                 </div>
               </div>
             </button>
@@ -393,7 +370,7 @@ export function AuthScreen() {
     );
   }
 
-  // Recovery: Find username by security answer
+  // Recovery: Find username by email
   if (mode === 'recovery-username') {
     return (
       <div className="min-h-screen bg-topo flex items-center justify-center p-4">
@@ -408,49 +385,30 @@ export function AuthScreen() {
 
           <div className="text-center mb-8">
             <div className="inline-block p-3 bg-violet-500/20 rounded-full mb-4 border border-violet-500/30">
-              <User className="w-8 h-8 text-violet-400" />
+              <Mail className="w-8 h-8 text-violet-400" />
             </div>
             <h1 className="text-2xl font-bold text-white mb-2">Find Your Username</h1>
             <p className="text-slate-400">
-              Answer your security question to find your account
+              Enter the recovery email you added to your profile
             </p>
           </div>
 
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
-                Select Your Security Question
-              </label>
-              <select
-                value={selectedQuestionId}
-                onChange={(e) => setSelectedQuestionId(e.target.value)}
-                className="w-full px-4 py-3 bg-slate-900 border-2 border-slate-600 rounded-lg text-white focus:border-violet-500 focus:outline-none"
-                disabled={isLoading}
-              >
-                {allQuestions.map((q) => (
-                  <option key={q.id} value={q.id}>
-                    {q.question}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                Your Answer
+                Recovery Email
               </label>
               <input
-                type="text"
-                value={recoveryAnswer}
+                type="email"
+                value={recoveryEmail}
                 onChange={(e) => {
-                  setRecoveryAnswer(e.target.value);
+                  setRecoveryEmail(e.target.value);
                   setError('');
                 }}
-                placeholder="Enter your answer"
+                placeholder="Enter your email"
                 className="w-full px-4 py-3 bg-slate-900 border-2 border-slate-600 rounded-lg text-white placeholder-slate-500 focus:border-violet-500 focus:outline-none"
                 disabled={isLoading}
               />
-              <p className="text-xs text-slate-500 mt-1">Answers are not case-sensitive</p>
             </div>
 
             {error && (
@@ -460,12 +418,16 @@ export function AuthScreen() {
             )}
 
             <button
-              onClick={handleFindUsername}
-              disabled={isLoading || !recoveryAnswer.trim()}
+              onClick={handleFindUsernameByEmail}
+              disabled={isLoading || !recoveryEmail.trim()}
               className="w-full py-3 bg-gradient-to-br from-violet-500 to-violet-600 hover:shadow-lg text-white rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-violet-400"
             >
               {isLoading ? 'Searching...' : 'Find My Username'}
             </button>
+
+            <p className="text-xs text-slate-500 text-center">
+              Don't have a recovery email set up? You'll need to create a new account.
+            </p>
           </div>
         </div>
       </div>
