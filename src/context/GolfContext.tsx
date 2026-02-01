@@ -60,8 +60,25 @@ export interface RoundStats {
 
 const GolfContext = createContext<GolfContextType | undefined>(undefined);
 
+// Default clubs for guest users
+const DEFAULT_CLUBS: ClubInBag[] = [
+  { id: 'guest-1', profile_id: 'guest', club_type: 'Driver', club_name: 'Driver', yardage: 230, created_at: '' },
+  { id: 'guest-2', profile_id: 'guest', club_type: 'Wood', club_name: '3 Wood', yardage: 210, created_at: '' },
+  { id: 'guest-3', profile_id: 'guest', club_type: 'Hybrid', club_name: '3 Hybrid', yardage: 190, created_at: '' },
+  { id: 'guest-4', profile_id: 'guest', club_type: 'Iron', club_name: '4 Iron', yardage: 180, created_at: '' },
+  { id: 'guest-5', profile_id: 'guest', club_type: 'Iron', club_name: '5 Iron', yardage: 170, created_at: '' },
+  { id: 'guest-6', profile_id: 'guest', club_type: 'Iron', club_name: '6 Iron', yardage: 160, created_at: '' },
+  { id: 'guest-7', profile_id: 'guest', club_type: 'Iron', club_name: '7 Iron', yardage: 150, created_at: '' },
+  { id: 'guest-8', profile_id: 'guest', club_type: 'Iron', club_name: '8 Iron', yardage: 140, created_at: '' },
+  { id: 'guest-9', profile_id: 'guest', club_type: 'Iron', club_name: '9 Iron', yardage: 130, created_at: '' },
+  { id: 'guest-10', profile_id: 'guest', club_type: 'Wedge', club_name: 'Pitching Wedge', yardage: 120, created_at: '' },
+  { id: 'guest-11', profile_id: 'guest', club_type: 'Wedge', club_name: 'Sand Wedge', yardage: 100, created_at: '' },
+  { id: 'guest-12', profile_id: 'guest', club_type: 'Wedge', club_name: 'Lob Wedge', yardage: 80, created_at: '' },
+  { id: 'guest-13', profile_id: 'guest', club_type: 'Putter', club_name: 'Putter', yardage: 0, created_at: '' },
+];
+
 export function GolfProvider({ children }: { children: ReactNode }) {
-  const { profileId } = useAuth();
+  const { profileId, isGuest } = useAuth();
   const [round, setRound] = useState<Round | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [clubs, setClubs] = useState<ClubInBag[]>([]);
@@ -70,9 +87,28 @@ export function GolfProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (profileId) {
-      loadProfile();
+      if (isGuest) {
+        // Create in-memory guest profile
+        setProfile({
+          id: 'guest',
+          username: 'guest',
+          name: 'Guest',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          wind_enabled: false,
+          wind_speed: 0,
+          wind_direction: 'N',
+        });
+        setClubs(DEFAULT_CLUBS);
+      } else {
+        loadProfile();
+      }
+    } else {
+      // Clear profile when logged out
+      setProfile(null);
+      setClubs([]);
     }
-  }, [profileId]);
+  }, [profileId, isGuest]);
 
   const createDefaultClubs = async (profileId: string) => {
     const defaultClubs = [
@@ -230,7 +266,8 @@ export function GolfProvider({ children }: { children: ReactNode }) {
 
     let holes: Hole[] = [];
 
-    if (courseId) {
+    if (courseId && !isGuest) {
+      // Guests can't use saved courses (they're database-only)
       const { data: courseHoles } = await supabase
         .from('course_holes')
         .select('*')
@@ -262,6 +299,24 @@ export function GolfProvider({ children }: { children: ReactNode }) {
       setCurrentCourseId(null);
     }
 
+    // For guests, create round in memory only (no database)
+    if (isGuest) {
+      const guestRoundId = `guest-round-${Date.now()}`;
+      setCurrentRoundId(guestRoundId);
+      setRound({
+        id: guestRoundId,
+        holes,
+        currentHoleIndex: 0,
+        isRoundComplete: false,
+        profile: profile || undefined,
+        clubs,
+        mulligansAllowed,
+        mulligansUsed: 0,
+      });
+      return;
+    }
+
+    // For authenticated users, save to database
     const { data: newRound } = await supabase
       .from('rounds')
       .insert({
@@ -366,6 +421,9 @@ export function GolfProvider({ children }: { children: ReactNode }) {
 
     setRound(updatedRound);
 
+    // Skip database operations for guests
+    if (isGuest) return;
+
     try {
       if (isOnline()) {
         const { data: holesData } = await supabase
@@ -405,6 +463,19 @@ export function GolfProvider({ children }: { children: ReactNode }) {
     const currentHole = getCurrentHole();
     if (!currentHole || currentHole.shots.length === 0 || currentHole.isComplete) return;
 
+    // Update state first
+    setRound({
+      ...round,
+      holes: round.holes.map((hole, idx) =>
+        idx === round.currentHoleIndex
+          ? { ...hole, shots: hole.shots.slice(0, -1) }
+          : hole
+      ),
+    });
+
+    // Skip database operations for guests
+    if (isGuest) return;
+
     const { data: holesData } = await supabase
       .from('holes')
       .select('id')
@@ -424,15 +495,6 @@ export function GolfProvider({ children }: { children: ReactNode }) {
         await supabase.from('shots').delete().eq('id', shots[0].id);
       }
     }
-
-    setRound({
-      ...round,
-      holes: round.holes.map((hole, idx) =>
-        idx === round.currentHoleIndex
-          ? { ...hole, shots: hole.shots.slice(0, -1) }
-          : hole
-      ),
-    });
   };
 
   const useMulligan = async () => {
@@ -441,6 +503,20 @@ export function GolfProvider({ children }: { children: ReactNode }) {
 
     const currentHole = getCurrentHole();
     if (!currentHole || currentHole.shots.length === 0 || currentHole.isComplete) return;
+
+    // Update state first
+    setRound({
+      ...round,
+      mulligansUsed: round.mulligansUsed + 1,
+      holes: round.holes.map((hole, idx) =>
+        idx === round.currentHoleIndex
+          ? { ...hole, shots: hole.shots.slice(0, -1) }
+          : hole
+      ),
+    });
+
+    // Skip database operations for guests
+    if (isGuest) return;
 
     const { data: holesData } = await supabase
       .from('holes')
@@ -473,16 +549,6 @@ export function GolfProvider({ children }: { children: ReactNode }) {
       .from('rounds')
       .update({ mulligans_used: round.mulligansUsed + 1 })
       .eq('id', currentRoundId);
-
-    setRound({
-      ...round,
-      mulligansUsed: round.mulligansUsed + 1,
-      holes: round.holes.map((hole, idx) =>
-        idx === round.currentHoleIndex
-          ? { ...hole, shots: hole.shots.slice(0, -1) }
-          : hole
-      ),
-    });
   };
 
   const finishHole = async (putts: number) => {
@@ -521,6 +587,17 @@ export function GolfProvider({ children }: { children: ReactNode }) {
     };
 
     setRound(updatedRound);
+
+    // For guests, just update state (no database)
+    if (isGuest) {
+      if (isRoundComplete) {
+        setRound({
+          ...updatedRound,
+          totalScore,
+        });
+      }
+      return;
+    }
 
     try {
       if (isOnline()) {
@@ -577,6 +654,15 @@ export function GolfProvider({ children }: { children: ReactNode }) {
     const nextHoleIndex = round.currentHoleIndex + 1;
     const isRoundComplete = nextHoleIndex >= round.holes.length;
 
+    setRound({
+      ...round,
+      currentHoleIndex: isRoundComplete ? round.currentHoleIndex : nextHoleIndex,
+      isRoundComplete,
+    });
+
+    // Skip database operations for guests
+    if (isGuest) return;
+
     await supabase
       .from('rounds')
       .update({
@@ -585,12 +671,6 @@ export function GolfProvider({ children }: { children: ReactNode }) {
         updated_at: new Date().toISOString(),
       })
       .eq('id', currentRoundId);
-
-    setRound({
-      ...round,
-      currentHoleIndex: isRoundComplete ? round.currentHoleIndex : nextHoleIndex,
-      isRoundComplete,
-    });
   };
 
   const getHoleStats = useCallback((holeIndex: number): HoleStats => {
