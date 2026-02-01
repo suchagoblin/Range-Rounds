@@ -601,6 +601,13 @@ export default function ProfileScreen({
                         </div>
                       </div>
                     </div>
+                    <button
+                      onClick={() => handleDeleteBestRound(round.id)}
+                      className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors"
+                      title="Delete this round"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 ))}
               </div>
