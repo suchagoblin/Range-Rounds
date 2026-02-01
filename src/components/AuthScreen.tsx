@@ -561,10 +561,39 @@ export function AuthScreen() {
           {error && (
             <div className="p-3 bg-red-500/20 border border-red-500/30 rounded-lg">
               <p className="text-sm text-red-400 text-center">{error}</p>
+              {mode === 'login' && error.toLowerCase().includes('invalid') && (
+                <button
+                  onClick={() => {
+                    setMode('recovery');
+                    setError('');
+                    setSuccessMessage('');
+                  }}
+                  className="w-full mt-2 text-violet-400 hover:text-violet-300 font-medium text-sm underline"
+                >
+                  Forgot your PIN? Reset it here
+                </button>
+              )}
             </div>
           )}
 
-          <div className="pt-4 text-center space-y-2">
+          {mode === 'login' && (
+            <div className="p-3 bg-violet-500/10 border border-violet-500/30 rounded-lg">
+              <button
+                onClick={() => {
+                  setMode('recovery');
+                  setError('');
+                  setSuccessMessage('');
+                }}
+                disabled={isLoading}
+                className="w-full text-violet-400 hover:text-violet-300 font-medium text-sm flex items-center justify-center gap-2"
+              >
+                <KeyRound className="w-4 h-4" />
+                Forgot your PIN?
+              </button>
+            </div>
+          )}
+
+          <div className="pt-4 text-center">
             <button
               onClick={toggleMode}
               disabled={isLoading}
@@ -574,22 +603,6 @@ export function AuthScreen() {
                 ? 'Already have an account? Sign in'
                 : "Don't have an account? Sign up"}
             </button>
-
-            {mode === 'login' && (
-              <div>
-                <button
-                  onClick={() => {
-                    setMode('recovery');
-                    setError('');
-                    setSuccessMessage('');
-                  }}
-                  disabled={isLoading}
-                  className="text-violet-400 hover:text-violet-300 font-medium text-sm"
-                >
-                  Forgot your PIN?
-                </button>
-              </div>
-            )}
           </div>
         </div>
       </div>
