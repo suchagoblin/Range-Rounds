@@ -43,7 +43,7 @@ export default function ProfileScreen({
   onDeleteClub,
   onBack
 }: ProfileScreenProps) {
-  const { getBestRounds, getPastRounds } = useGolf();
+  const { getBestRounds, getPastRounds, deleteRound } = useGolf();
   const { logout, username, profileId } = useAuth();
   const [name, setName] = useState(profileName);
   const [isAddingClub, setIsAddingClub] = useState(false);
@@ -67,6 +67,14 @@ export default function ProfileScreen({
     loadData();
     loadRecoveryEmail();
   }, []);
+
+
+  const handleDeleteRound = async (roundId: string) => {
+    if (window.confirm('Are you sure you want to delete this round? This cannot be undone.')) {
+      await deleteRound(roundId);
+      loadData();
+    }
+  };
 
   const loadData = async () => {
     const rounds = await getBestRounds(5);
@@ -279,13 +287,13 @@ export default function ProfileScreen({
                   <div
                     key={ach.id}
                     className={`p-3 rounded-xl border flex items-center gap-3 transition-colors ${ach.unlocked
-                        ? 'bg-slate-800/80 border-indigo-500/30'
-                        : 'bg-slate-900/40 border-slate-800 opacity-60'
+                      ? 'bg-slate-800/80 border-indigo-500/30'
+                      : 'bg-slate-900/40 border-slate-800 opacity-60'
                       }`}
                   >
                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl ${ach.unlocked
-                        ? 'bg-indigo-500/20 border border-indigo-500/30'
-                        : 'bg-slate-800 border border-slate-700 grayscale'
+                      ? 'bg-indigo-500/20 border border-indigo-500/30'
+                      : 'bg-slate-800 border border-slate-700 grayscale'
                       }`}>
                       {ach.icon}
                     </div>
@@ -502,6 +510,13 @@ export default function ProfileScreen({
                         </div>
                       </div>
                     </div>
+                    <button
+                      onClick={() => handleDeleteRound(round.id)}
+                      className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                      title="Delete Round"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 ))}
               </div>
