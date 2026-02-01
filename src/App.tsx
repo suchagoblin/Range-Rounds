@@ -9,9 +9,10 @@ import RoundHistory from './components/RoundHistory';
 import CourseManager from './components/CourseManager';
 import RoundSummary from './components/RoundSummary';
 import CommunityLeaderboard from './components/CommunityLeaderboard';
+import { GuestBanner } from './components/GuestBanner';
 
 function App() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, isGuest, logout } = useAuth();
   const { round, profile, clubs, updateProfile, updateWindSettings, addClub, updateClub, deleteClub, exitRound } = useGolf();
   const [showProfile, setShowProfile] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
@@ -31,7 +32,25 @@ function App() {
     return <AuthScreen />;
   }
 
+  // Handle sign up from guest banner - log out to show auth screen
+  const handleSignUpFromGuest = () => {
+    logout();
+  };
+
+  // Wrapper component to add guest banner
+  const withGuestBanner = (content: React.ReactNode) => (
+    <div className="min-h-screen flex flex-col">
+      <GuestBanner onSignUp={handleSignUpFromGuest} />
+      <div className="flex-1">{content}</div>
+    </div>
+  );
+
   if (showProfile) {
+    // Don't show profile for guests - they can't save settings anyway
+    if (isGuest) {
+      setShowProfile(false);
+      return null;
+    }
     return (
       <ProfileScreen
         profileName={profile?.name || 'Golfer'}
@@ -50,19 +69,30 @@ function App() {
   }
 
   if (showHistory) {
+    if (isGuest) {
+      // Guests don't have history
+      setShowHistory(false);
+      return null;
+    }
     return <RoundHistory onBack={() => setShowHistory(false)} />;
   }
 
   if (showCourses) {
+    if (isGuest) {
+      // Guests can't access courses
+      setShowCourses(false);
+      return null;
+    }
     return <CourseManager onBack={() => setShowCourses(false)} />;
   }
 
   if (showLeaderboard) {
-    return <CommunityLeaderboard onClose={() => setShowLeaderboard(false)} />;
+    // Guests can view leaderboard
+    return withGuestBanner(<CommunityLeaderboard onClose={() => setShowLeaderboard(false)} />);
   }
 
   if (!round) {
-    return (
+    return withGuestBanner(
       <SetupScreen
         onOpenProfile={() => setShowProfile(true)}
         onOpenHistory={() => setShowHistory(true)}
@@ -77,7 +107,7 @@ function App() {
   }
 
   if (showSummary && round.isRoundComplete) {
-    return (
+    return withGuestBanner(
       <RoundSummary
         onClose={() => setShowSummary(false)}
         onNewRound={() => {
@@ -88,7 +118,7 @@ function App() {
     );
   }
 
-  return <GameScreen onOpenProfile={() => setShowProfile(true)} />;
+  return withGuestBanner(<GameScreen onOpenProfile={() => setShowProfile(true)} />);
 }
 
 export default App;
