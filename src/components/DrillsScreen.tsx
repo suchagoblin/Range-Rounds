@@ -9,19 +9,13 @@ interface DrillsScreenProps {
 }
 
 export default function DrillsScreen({ onBack }: DrillsScreenProps) {
-    const [selectedCategory, setSelectedCategory] = useState<DrillCategory | 'All'>('All');
-
-    const categories: (DrillCategory | 'All')[] = ['All', 'Putting', 'Chipping', 'Full Swing'];
-
-    const filteredDrills = selectedCategory === 'All'
-        ? DRILLS_DATA
-        : DRILLS_DATA.filter(drill => drill.category === selectedCategory);
+    const sections: DrillCategory[] = ['Driving', 'Full Swing', 'Irons', 'Chipping', 'Putting'];
 
     return (
         <div className="min-h-screen bg-topo p-4 md:p-6">
             <div className="max-w-xl mx-auto">
                 {/* Header */}
-                <div className="flex items-center gap-4 mb-6">
+                <div className="flex items-center gap-4 mb-8">
                     <button
                         onClick={onBack}
                         className="p-2 hover:bg-slate-800 rounded-full transition-colors"
@@ -34,35 +28,27 @@ export default function DrillsScreen({ onBack }: DrillsScreenProps) {
                     </div>
                 </div>
 
-                {/* Filters */}
-                <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide">
-                    <Filter className="w-4 h-4 text-slate-500 flex-shrink-0 mr-1" />
-                    {categories.map((category) => (
-                        <button
-                            key={category}
-                            onClick={() => setSelectedCategory(category)}
-                            className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all ${selectedCategory === category
-                                    ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
-                                    : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
-                                }`}
-                        >
-                            {category}
-                        </button>
-                    ))}
-                </div>
+                {/* Sections */}
+                <div className="space-y-10 pb-12">
+                    {sections.map((category) => {
+                        const drills = DRILLS_DATA.filter(d => d.category === category);
+                        if (drills.length === 0) return null;
 
-                {/* List */}
-                <div className="space-y-4">
-                    {filteredDrills.map((drill) => (
-                        <DrillCard key={drill.id} drill={drill} />
-                    ))}
+                        return (
+                            <div key={category} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <h2 className="text-xl font-bold text-white tracking-tight">{category}</h2>
+                                    <div className="h-px flex-1 bg-gradient-to-r from-slate-700 to-transparent"></div>
+                                </div>
+                                <div className="space-y-4">
+                                    {drills.map((drill) => (
+                                        <DrillCard key={drill.id} drill={drill} />
+                                    ))}
+                                </div>
+                            </div>
+                        );
+                    })}
                 </div>
-
-                {filteredDrills.length === 0 && (
-                    <div className="text-center py-12 text-slate-500">
-                        <p>No drills found for this category yet.</p>
-                    </div>
-                )}
             </div>
         </div>
     );
