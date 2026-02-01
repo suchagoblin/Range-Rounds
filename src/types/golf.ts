@@ -145,3 +145,16 @@ export interface CommunityLeaderboardEntry {
   averageScore: number;
   totalRoundsCompleted: number;
 }
+
+export interface SecurityQuestion {
+  id: string;
+  question: string;
+  display_order: number;
+}
+
+export interface ProfileSecurityAnswer {
+  id: string;
+  profile_id: string;
+  question_id: string;
+  created_at: string;
+}
