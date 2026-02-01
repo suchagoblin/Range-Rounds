@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { ClubInBag, ClubName, ClubType, BestRound } from '../types/golf';
-import { Plus, Trash2, Save, User, Trophy, LogOut, Wind } from 'lucide-react';
+import { Plus, Trash2, Save, User, Trophy, LogOut, Wind, Mail, Info, X } from 'lucide-react';
 import { useGolf } from '../context/GolfContext';
 import { useAuth } from '../context/AuthContext';
 import { SecurityQuestions } from './SecurityQuestions';
+import { supabase } from '../lib/supabase';
 
 interface ProfileScreenProps {
   profileName: string;
@@ -42,7 +43,7 @@ export default function ProfileScreen({
   onBack
 }: ProfileScreenProps) {
   const { getBestRounds } = useGolf();
-  const { logout, username } = useAuth();
+  const { logout, username, profileId } = useAuth();
   const [name, setName] = useState(profileName);
   const [isAddingClub, setIsAddingClub] = useState(false);
   const [selectedType, setSelectedType] = useState<ClubType>('Driver');
@@ -54,13 +55,93 @@ export default function ProfileScreen({
   const [localWindSpeed, setLocalWindSpeed] = useState(windSpeed.toString());
   const [localWindDirection, setLocalWindDirection] = useState(windDirection);
 
+  // Recovery email state
+  const [recoveryEmail, setRecoveryEmail] = useState('');
+  const [savedRecoveryEmail, setSavedRecoveryEmail] = useState<string | null>(null);
+  const [emailSaving, setEmailSaving] = useState(false);
+  const [emailMessage, setEmailMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
   useEffect(() => {
     loadBestRounds();
+    loadRecoveryEmail();
   }, []);
 
   const loadBestRounds = async () => {
     const rounds = await getBestRounds(5);
     setBestRounds(rounds);
+  };
+
+  const loadRecoveryEmail = async () => {
+    if (!profileId) return;
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('recovery_email')
+      .eq('id', profileId)
+      .single();
+
+    if (!error && data?.recovery_email) {
+      setSavedRecoveryEmail(data.recovery_email);
+      setRecoveryEmail(data.recovery_email);
+    }
+  };
+
+  const handleSaveRecoveryEmail = async () => {
+    if (!profileId) return;
+
+    const emailToSave = recoveryEmail.trim().toLowerCase() || null;
+
+    // Basic validation if email is provided
+    if (emailToSave && !emailToSave.includes('@')) {
+      setEmailMessage({ type: 'error', text: 'Please enter a valid email address' });
+      return;
+    }
+
+    setEmailSaving(true);
+    setEmailMessage(null);
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({ recovery_email: emailToSave })
+      .eq('id', profileId);
+
+    if (error) {
+      if (error.message.includes('unique_recovery_email')) {
+        setEmailMessage({ type: 'error', text: 'This email is already in use by another account' });
+      } else {
+        setEmailMessage({ type: 'error', text: 'Failed to save email. Please try again.' });
+      }
+    } else {
+      setSavedRecoveryEmail(emailToSave);
+      setEmailMessage({ type: 'success', text: emailToSave ? 'Recovery email saved!' : 'Recovery email removed' });
+      setTimeout(() => setEmailMessage(null), 3000);
+    }
+
+    setEmailSaving(false);
+  };
+
+  const handleRemoveRecoveryEmail = async () => {
+    setRecoveryEmail('');
+    setSavedRecoveryEmail(null);
+
+    if (!profileId) return;
+
+    setEmailSaving(true);
+    setEmailMessage(null);
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({ recovery_email: null })
+      .eq('id', profileId);
+
+    if (error) {
+      setEmailMessage({ type: 'error', text: 'Failed to remove email. Please try again.' });
+    } else {
+      setEmailMessage({ type: 'success', text: 'Recovery email removed' });
+      setTimeout(() => setEmailMessage(null), 3000);
+    }
+
+    setEmailSaving(false);
   };
 
   const handleSaveName = () => {
@@ -213,6 +294,82 @@ export default function ProfileScreen({
         </div>
 
         <SecurityQuestions />
+
+        <div className="bg-slate-800/80 backdrop-blur-sm rounded-2xl border border-slate-700 p-6 mb-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Mail className="w-6 h-6 text-violet-400" />
+            <h2 className="text-xl font-bold text-white">Recovery Email</h2>
+            <span className="text-xs bg-slate-700 text-slate-400 px-2 py-0.5 rounded ml-auto">Optional</span>
+          </div>
+
+          <div className="mb-4 p-3 bg-violet-500/10 border border-violet-500/30 rounded-lg">
+            <div className="flex items-start gap-2">
+              <Info className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+              <div className="text-sm text-slate-300">
+                <p className="mb-2">
+                  Adding a recovery email lets you retrieve your username if you forget it.
+                </p>
+                <p className="text-slate-400">
+                  <strong className="text-slate-300">Transparency:</strong> Your email is stored as-is (not encrypted) so we can match it when you need to recover your username. We don't send marketing emails or share your email. If you're concerned about privacy, you can skip this.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <div>
+              <label className="block text-sm font-semibold text-slate-300 mb-2">
+                Email Address
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="email"
+                  value={recoveryEmail}
+                  onChange={(e) => {
+                    setRecoveryEmail(e.target.value);
+                    setEmailMessage(null);
+                  }}
+                  placeholder="your.email@example.com"
+                  className="flex-1 px-4 py-2 bg-slate-900 border-2 border-slate-600 rounded-lg text-white placeholder-slate-500 focus:border-violet-500 focus:outline-none"
+                  disabled={emailSaving}
+                />
+                {savedRecoveryEmail && (
+                  <button
+                    onClick={handleRemoveRecoveryEmail}
+                    disabled={emailSaving}
+                    className="px-3 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors border border-red-500/30 disabled:opacity-50"
+                    title="Remove recovery email"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {emailMessage && (
+              <div className={`p-3 rounded-lg ${
+                emailMessage.type === 'success'
+                  ? 'bg-emerald-500/20 border border-emerald-500/30'
+                  : 'bg-red-500/20 border border-red-500/30'
+              }`}>
+                <p className={`text-sm text-center ${
+                  emailMessage.type === 'success' ? 'text-emerald-400' : 'text-red-400'
+                }`}>
+                  {emailMessage.text}
+                </p>
+              </div>
+            )}
+
+            <button
+              onClick={handleSaveRecoveryEmail}
+              disabled={emailSaving || recoveryEmail === (savedRecoveryEmail || '')}
+              className="w-full px-4 py-2 bg-gradient-to-br from-violet-500 to-violet-600 text-white rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2 font-medium border border-violet-400 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Save className="w-4 h-4" />
+              {emailSaving ? 'Saving...' : 'Save Recovery Email'}
+            </button>
+          </div>
+        </div>
 
         {bestRounds.length > 0 && (
           <div className="bg-slate-800/80 backdrop-blur-sm rounded-2xl border border-slate-700 p-6 mb-6">
