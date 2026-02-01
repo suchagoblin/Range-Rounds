@@ -109,5 +109,64 @@ export const DRILLS_DATA: Drill[] = [
             'This forces you to stay centered and balanced.',
             'If you sway or lunge, you will lose balance immediately.'
         ]
+    },
+    // Driving
+    {
+        id: 'driving-headcover',
+        title: 'Headcover Drill',
+        description: 'Keep your swing connected and sync your arms with your body rotation.',
+        difficulty: 'Beginner',
+        category: 'Driving',
+        rating: 4.7,
+        steps: [
+            'Place a headcover under your trailing armpit (right arm for righties).',
+            'Take 3/4 swings with your driver, keeping the headcover pinned.',
+            'If the headcover drops early, your arms are disconnecting from your body.',
+            'Focus on turning your chest to move the club, not just lifting your arms.'
+        ]
+    },
+    {
+        id: 'driving-chair',
+        title: 'The Chair Drill',
+        description: 'Eliminate lateral sway and build a powerful, centered turn.',
+        difficulty: 'Intermediate',
+        category: 'Driving',
+        rating: 4.5,
+        steps: [
+            'Place a chair (or alignment stick) next to your trail hip.',
+            'Make your backswing without bumping into the chair.',
+            'Feel your trail hip rotating "back and around" rather than sliding sideways.',
+            'This creates more torque and power for your drives.'
+        ]
+    },
+    // Irons
+    {
+        id: 'irons-towel',
+        title: 'The Towel Drill',
+        description: 'The ultimate drill for connection and consistent ball striking.',
+        difficulty: 'Intermediate',
+        category: 'Irons',
+        rating: 4.9,
+        steps: [
+            'Place a towel across your chest and under both armpits.',
+            'Make half-swings with a 7-iron, keeping the towel in place.',
+            'This forces your body and arms to move as a single unit.',
+            'Great for fixing "flying elbows" and inconsistent contact.'
+        ]
+    },
+    {
+        id: 'irons-divot',
+        title: 'Divot Discipline',
+        description: 'Ensure you hit the ball first, then the ground for crisp iron shots.',
+        difficulty: 'Advanced',
+        category: 'Irons',
+        rating: 4.8,
+        steps: [
+            'Place a piece of tape or a tee completely flat on the ground.',
+            'Place your ball 1 inch in front of the tape.',
+            'Hit the ball without disturbing the tape.',
+            'If you hit the tape, you are hitting "fat" (ground first).',
+            'Focus on shifting your weight forward to the lead side at impact.'
+        ]
     }
 ];
