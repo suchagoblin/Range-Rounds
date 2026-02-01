@@ -122,34 +122,12 @@ export default function ProfileScreen({
             </button>
           </div>
 
-          <div className="mb-4">
+          <div className="mb-6">
             <label className="block text-sm font-semibold text-slate-300 mb-2">
               Username
             </label>
-            <div className="px-4 py-2 bg-slate-900 border border-slate-600 rounded-lg text-slate-300 font-medium">
+            <div className="px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg text-white font-medium">
               @{username}
-            </div>
-          </div>
-
-          <div className="mb-6">
-            <label className="block text-sm font-semibold text-slate-300 mb-2">
-              Display Name
-            </label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="flex-1 px-4 py-2 bg-slate-900 border-2 border-slate-600 rounded-lg text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
-                placeholder="Enter your name"
-              />
-              <button
-                onClick={handleSaveName}
-                className="px-4 py-2 bg-gradient-to-br from-emerald-500 to-emerald-600 text-white rounded-lg hover:shadow-lg transition-all flex items-center gap-2 border border-emerald-400"
-              >
-                <Save className="w-4 h-4" />
-                Save
-              </button>
             </div>
           </div>
 

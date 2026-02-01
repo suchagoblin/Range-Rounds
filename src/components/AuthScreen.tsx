@@ -1,24 +1,27 @@
 import { useState } from 'react';
-import { Lock, User, UserPlus, KeyRound, ArrowLeft, Shield } from 'lucide-react';
+import { Lock, User, UserPlus, KeyRound, ArrowLeft, Shield, HelpCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { validateUsername, validateName, validatePin } from '../utils/validation';
+import { validateUsername, validatePin } from '../utils/validation';
 import { supabase } from '../lib/supabase';
 
-type AuthMode = 'login' | 'signup' | 'recovery' | 'recovery-question' | 'recovery-newpin';
+type AuthMode = 'login' | 'signup' | 'recovery-choice' | 'recovery-pin' | 'recovery-username' | 'recovery-question' | 'recovery-newpin' | 'recovery-show-username';
 
 export function AuthScreen() {
   const { login, signup } = useAuth();
   const [mode, setMode] = useState<AuthMode>('login');
   const [username, setUsername] = useState('');
-  const [name, setName] = useState('');
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   // Recovery state
+  const [recoveryType, setRecoveryType] = useState<'pin' | 'username'>('pin');
   const [recoveryQuestion, setRecoveryQuestion] = useState<{ id: string; text: string } | null>(null);
   const [recoveryAnswer, setRecoveryAnswer] = useState('');
+  const [selectedQuestionId, setSelectedQuestionId] = useState<string>('');
+  const [allQuestions, setAllQuestions] = useState<{ id: string; question: string }[]>([]);
+  const [recoveredUsername, setRecoveredUsername] = useState('');
 
   const handlePinInput = (digit: string) => {
     if (pin.length < 6) {
@@ -45,20 +48,12 @@ export function AuthScreen() {
       return;
     }
 
-    if (mode === 'signup') {
-      const nameValidation = validateName(name);
-      if (!nameValidation.valid) {
-        setError(nameValidation.error || 'Invalid name');
-        return;
-      }
-    }
-
     setIsLoading(true);
     setError('');
 
     try {
       const result = mode === 'signup'
-        ? await signup(username, name, pin)
+        ? await signup(username, pin)
         : await login(username, pin);
 
       if (!result.success) {
@@ -74,7 +69,7 @@ export function AuthScreen() {
     }
   };
 
-  const handleStartRecovery = async () => {
+  const handleStartPinRecovery = async () => {
     const usernameValidation = validateUsername(username);
     if (!usernameValidation.valid) {
       setError(usernameValidation.error || 'Please enter your username');
@@ -85,7 +80,6 @@ export function AuthScreen() {
     setError('');
 
     try {
-      // Check if user has security question set up
       const { data: hasQuestions } = await supabase
         .rpc('has_security_questions', { p_username: username });
 
@@ -95,7 +89,6 @@ export function AuthScreen() {
         return;
       }
 
-      // Get the security question
       const { data: questionData, error: questionError } = await supabase
         .rpc('get_security_question_for_user', { p_username: username });
 
@@ -109,10 +102,69 @@ export function AuthScreen() {
         id: questionData[0].question_id,
         text: questionData[0].question_text
       });
+      setRecoveryType('pin');
       setMode('recovery-question');
     } catch (err) {
       setError('An error occurred. Please try again.');
       console.error('Recovery error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleStartUsernameRecovery = async () => {
+    setIsLoading(true);
+    setError('');
+
+    try {
+      // Load all security questions
+      const { data: questions } = await supabase
+        .from('security_questions')
+        .select('id, question')
+        .order('display_order');
+
+      if (questions && questions.length > 0) {
+        setAllQuestions(questions);
+        setSelectedQuestionId(questions[0].id);
+        setMode('recovery-username');
+      } else {
+        setError('Could not load security questions. Please try again.');
+      }
+    } catch (err) {
+      setError('An error occurred. Please try again.');
+      console.error('Username recovery error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleFindUsername = async () => {
+    if (!recoveryAnswer.trim()) {
+      setError('Please enter your answer');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const { data, error: findError } = await supabase
+        .rpc('find_username_by_security_answer', {
+          p_question_id: selectedQuestionId,
+          p_answer: recoveryAnswer
+        });
+
+      if (findError || !data) {
+        setError('No account found with that answer. Please try a different question or check your answer.');
+        setIsLoading(false);
+        return;
+      }
+
+      setRecoveredUsername(data);
+      setMode('recovery-show-username');
+    } catch (err) {
+      setError('An error occurred. Please try again.');
+      console.error('Find username error:', err);
     } finally {
       setIsLoading(false);
     }
@@ -141,7 +193,6 @@ export function AuthScreen() {
         return;
       }
 
-      // Answer is correct, proceed to new PIN
       setMode('recovery-newpin');
       setPin('');
     } catch (err) {
@@ -177,7 +228,6 @@ export function AuthScreen() {
         return;
       }
 
-      // Success! Go back to login
       setSuccessMessage('PIN reset successfully! Please sign in with your new PIN.');
       resetState();
       setMode('login');
@@ -191,25 +241,34 @@ export function AuthScreen() {
 
   const resetState = () => {
     setUsername('');
-    setName('');
     setPin('');
     setError('');
     setRecoveryQuestion(null);
     setRecoveryAnswer('');
+    setSelectedQuestionId('');
+    setRecoveredUsername('');
   };
 
   const goBack = () => {
+    setError('');
     if (mode === 'recovery-newpin') {
       setMode('recovery-question');
       setPin('');
     } else if (mode === 'recovery-question') {
-      setMode('recovery');
+      setMode('recovery-pin');
       setRecoveryAnswer('');
+    } else if (mode === 'recovery-pin' || mode === 'recovery-username') {
+      setMode('recovery-choice');
+      setRecoveryAnswer('');
+    } else if (mode === 'recovery-show-username') {
+      setMode('login');
+      setUsername(recoveredUsername);
+      resetState();
+      setUsername(recoveredUsername);
     } else {
       setMode('login');
       resetState();
     }
-    setError('');
   };
 
   const toggleMode = () => {
@@ -218,8 +277,8 @@ export function AuthScreen() {
     setSuccessMessage('');
   };
 
-  // Recovery: Enter Username
-  if (mode === 'recovery') {
+  // Recovery Choice Screen
+  if (mode === 'recovery-choice') {
     return (
       <div className="min-h-screen bg-topo flex items-center justify-center p-4">
         <div className="bg-slate-800/90 backdrop-blur-sm rounded-2xl border border-slate-700 p-8 w-full max-w-md">
@@ -233,11 +292,67 @@ export function AuthScreen() {
 
           <div className="text-center mb-8">
             <div className="inline-block p-3 bg-violet-500/20 rounded-full mb-4 border border-violet-500/30">
+              <HelpCircle className="w-8 h-8 text-violet-400" />
+            </div>
+            <h1 className="text-2xl font-bold text-white mb-2">Account Recovery</h1>
+            <p className="text-slate-400">
+              What do you need help with?
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            <button
+              onClick={() => setMode('recovery-pin')}
+              className="w-full p-4 bg-slate-700/50 hover:bg-slate-700 border border-slate-600 rounded-lg text-left transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <KeyRound className="w-5 h-5 text-violet-400" />
+                <div>
+                  <div className="font-semibold text-white">I forgot my PIN</div>
+                  <div className="text-sm text-slate-400">Reset your PIN using your security question</div>
+                </div>
+              </div>
+            </button>
+
+            <button
+              onClick={handleStartUsernameRecovery}
+              disabled={isLoading}
+              className="w-full p-4 bg-slate-700/50 hover:bg-slate-700 border border-slate-600 rounded-lg text-left transition-colors disabled:opacity-50"
+            >
+              <div className="flex items-center gap-3">
+                <User className="w-5 h-5 text-violet-400" />
+                <div>
+                  <div className="font-semibold text-white">I forgot my username</div>
+                  <div className="text-sm text-slate-400">Find your username using your security question</div>
+                </div>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Recovery: Enter Username for PIN reset
+  if (mode === 'recovery-pin') {
+    return (
+      <div className="min-h-screen bg-topo flex items-center justify-center p-4">
+        <div className="bg-slate-800/90 backdrop-blur-sm rounded-2xl border border-slate-700 p-8 w-full max-w-md">
+          <button
+            onClick={goBack}
+            className="flex items-center gap-1 text-slate-400 hover:text-white mb-6 text-sm"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back
+          </button>
+
+          <div className="text-center mb-8">
+            <div className="inline-block p-3 bg-violet-500/20 rounded-full mb-4 border border-violet-500/30">
               <KeyRound className="w-8 h-8 text-violet-400" />
             </div>
-            <h1 className="text-2xl font-bold text-white mb-2">Forgot Your PIN?</h1>
+            <h1 className="text-2xl font-bold text-white mb-2">Reset Your PIN</h1>
             <p className="text-slate-400">
-              Enter your username to recover your account
+              Enter your username to continue
             </p>
           </div>
 
@@ -266,7 +381,7 @@ export function AuthScreen() {
             )}
 
             <button
-              onClick={handleStartRecovery}
+              onClick={handleStartPinRecovery}
               disabled={isLoading || !username}
               className="w-full py-3 bg-gradient-to-br from-violet-500 to-violet-600 hover:shadow-lg text-white rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-violet-400"
             >
@@ -278,7 +393,116 @@ export function AuthScreen() {
     );
   }
 
-  // Recovery: Answer Security Question
+  // Recovery: Find username by security answer
+  if (mode === 'recovery-username') {
+    return (
+      <div className="min-h-screen bg-topo flex items-center justify-center p-4">
+        <div className="bg-slate-800/90 backdrop-blur-sm rounded-2xl border border-slate-700 p-8 w-full max-w-md">
+          <button
+            onClick={goBack}
+            className="flex items-center gap-1 text-slate-400 hover:text-white mb-6 text-sm"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back
+          </button>
+
+          <div className="text-center mb-8">
+            <div className="inline-block p-3 bg-violet-500/20 rounded-full mb-4 border border-violet-500/30">
+              <User className="w-8 h-8 text-violet-400" />
+            </div>
+            <h1 className="text-2xl font-bold text-white mb-2">Find Your Username</h1>
+            <p className="text-slate-400">
+              Answer your security question to find your account
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Select Your Security Question
+              </label>
+              <select
+                value={selectedQuestionId}
+                onChange={(e) => setSelectedQuestionId(e.target.value)}
+                className="w-full px-4 py-3 bg-slate-900 border-2 border-slate-600 rounded-lg text-white focus:border-violet-500 focus:outline-none"
+                disabled={isLoading}
+              >
+                {allQuestions.map((q) => (
+                  <option key={q.id} value={q.id}>
+                    {q.question}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Your Answer
+              </label>
+              <input
+                type="text"
+                value={recoveryAnswer}
+                onChange={(e) => {
+                  setRecoveryAnswer(e.target.value);
+                  setError('');
+                }}
+                placeholder="Enter your answer"
+                className="w-full px-4 py-3 bg-slate-900 border-2 border-slate-600 rounded-lg text-white placeholder-slate-500 focus:border-violet-500 focus:outline-none"
+                disabled={isLoading}
+              />
+              <p className="text-xs text-slate-500 mt-1">Answers are not case-sensitive</p>
+            </div>
+
+            {error && (
+              <div className="p-3 bg-red-500/20 border border-red-500/30 rounded-lg">
+                <p className="text-sm text-red-400 text-center">{error}</p>
+              </div>
+            )}
+
+            <button
+              onClick={handleFindUsername}
+              disabled={isLoading || !recoveryAnswer.trim()}
+              className="w-full py-3 bg-gradient-to-br from-violet-500 to-violet-600 hover:shadow-lg text-white rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-violet-400"
+            >
+              {isLoading ? 'Searching...' : 'Find My Username'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Recovery: Show recovered username
+  if (mode === 'recovery-show-username') {
+    return (
+      <div className="min-h-screen bg-topo flex items-center justify-center p-4">
+        <div className="bg-slate-800/90 backdrop-blur-sm rounded-2xl border border-slate-700 p-8 w-full max-w-md">
+          <div className="text-center mb-8">
+            <div className="inline-block p-3 bg-emerald-500/20 rounded-full mb-4 border border-emerald-500/30">
+              <User className="w-8 h-8 text-emerald-400" />
+            </div>
+            <h1 className="text-2xl font-bold text-white mb-2">Username Found!</h1>
+            <p className="text-slate-400">
+              Your username is:
+            </p>
+          </div>
+
+          <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg mb-6">
+            <p className="text-2xl font-bold text-emerald-400 text-center">@{recoveredUsername}</p>
+          </div>
+
+          <button
+            onClick={goBack}
+            className="w-full py-3 bg-gradient-to-br from-emerald-500 to-emerald-600 hover:shadow-lg text-white rounded-lg font-semibold transition-all border border-emerald-400"
+          >
+            Sign In Now
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Recovery: Answer Security Question for PIN reset
   if (mode === 'recovery-question') {
     return (
       <div className="min-h-screen bg-topo flex items-center justify-center p-4">
@@ -441,16 +665,17 @@ export function AuthScreen() {
     <div className="min-h-screen bg-topo flex items-center justify-center p-4">
       <div className="bg-slate-800/90 backdrop-blur-sm rounded-2xl border border-slate-700 p-8 w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-block p-3 bg-emerald-500/20 rounded-full mb-4 border border-emerald-500/30">
+          <h1 className="text-3xl font-bold text-emerald-400 mb-1">Range Rounds</h1>
+          <div className="inline-block p-3 bg-emerald-500/20 rounded-full my-4 border border-emerald-500/30">
             {mode === 'signup' ? (
               <UserPlus className="w-8 h-8 text-emerald-400" />
             ) : (
               <User className="w-8 h-8 text-emerald-400" />
             )}
           </div>
-          <h1 className="text-2xl font-bold text-white mb-2">
+          <h2 className="text-xl font-bold text-white mb-2">
             {mode === 'signup' ? 'Create Account' : 'Welcome Back'}
-          </h1>
+          </h2>
           <p className="text-slate-400">
             {mode === 'signup' ? 'Sign up to start tracking your golf game' : 'Sign in to continue'}
           </p>
@@ -480,25 +705,6 @@ export function AuthScreen() {
               disabled={isLoading}
             />
           </div>
-
-          {mode === 'signup' && (
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                Display Name
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => {
-                  setName(e.target.value);
-                  setError('');
-                }}
-                placeholder="Enter your name"
-                className="w-full px-4 py-3 bg-slate-900 border-2 border-slate-600 rounded-lg text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
-                disabled={isLoading}
-              />
-            </div>
-          )}
 
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
@@ -550,7 +756,7 @@ export function AuthScreen() {
               </button>
               <button
                 onClick={handleSubmit}
-                disabled={isLoading || pin.length < 4 || !username || (mode === 'signup' && !name)}
+                disabled={isLoading || pin.length < 4 || !username}
                 className="h-14 bg-gradient-to-br from-emerald-500 to-emerald-600 hover:shadow-lg text-white rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-emerald-400"
               >
                 {isLoading ? '...' : '✓'}
@@ -564,13 +770,13 @@ export function AuthScreen() {
               {mode === 'login' && error.toLowerCase().includes('invalid') && (
                 <button
                   onClick={() => {
-                    setMode('recovery');
+                    setMode('recovery-choice');
                     setError('');
                     setSuccessMessage('');
                   }}
                   className="w-full mt-2 text-violet-400 hover:text-violet-300 font-medium text-sm underline"
                 >
-                  Forgot your PIN? Reset it here
+                  Need help signing in?
                 </button>
               )}
             </div>
@@ -580,15 +786,15 @@ export function AuthScreen() {
             <div className="p-3 bg-violet-500/10 border border-violet-500/30 rounded-lg">
               <button
                 onClick={() => {
-                  setMode('recovery');
+                  setMode('recovery-choice');
                   setError('');
                   setSuccessMessage('');
                 }}
                 disabled={isLoading}
                 className="w-full text-violet-400 hover:text-violet-300 font-medium text-sm flex items-center justify-center gap-2"
               >
-                <KeyRound className="w-4 h-4" />
-                Forgot your PIN?
+                <HelpCircle className="w-4 h-4" />
+                Forgot username or PIN?
               </button>
             </div>
           )}
