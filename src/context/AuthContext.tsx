@@ -6,7 +6,7 @@ interface AuthContextType {
   username: string | null;
   isAuthenticated: boolean;
   login: (username: string, pin: string) => Promise<{ success: boolean; error?: string }>;
-  signup: (username: string, name: string, pin: string) => Promise<{ success: boolean; error?: string }>;
+  signup: (username: string, pin: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   isLoading: boolean;
 }
@@ -64,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const signup = async (username: string, name: string, pin: string): Promise<{ success: boolean; error?: string }> => {
+  const signup = async (username: string, pin: string): Promise<{ success: boolean; error?: string }> => {
     try {
       const lowerUsername = username.toLowerCase();
 
@@ -84,7 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .from('profiles')
         .insert({
           username: lowerUsername,
-          name,
+          name: lowerUsername,
           pin_hash: hashedPin,
         })
         .select('id, username')
