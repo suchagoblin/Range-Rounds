@@ -3,6 +3,7 @@ import { ClubInBag, ClubName, ClubType, BestRound } from '../types/golf';
 import { Plus, Trash2, Save, User, Trophy, LogOut, Wind } from 'lucide-react';
 import { useGolf } from '../context/GolfContext';
 import { useAuth } from '../context/AuthContext';
+import { SecurityQuestions } from './SecurityQuestions';
 
 interface ProfileScreenProps {
   profileName: string;
@@ -232,6 +233,8 @@ export default function ProfileScreen({
             </button>
           </div>
         </div>
+
+        <SecurityQuestions />
 
         {bestRounds.length > 0 && (
           <div className="bg-slate-800/80 backdrop-blur-sm rounded-2xl border border-slate-700 p-6 mb-6">
