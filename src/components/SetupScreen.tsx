@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useGolf } from '../context/GolfContext';
-import { Flag, Wind, User, History, BookOpen, Users, X, DollarSign, Trophy, MapPin, Zap } from 'lucide-react';
+import { Flag, Wind, User, History, BookOpen, Users, X, DollarSign, Trophy, MapPin, Zap, HelpCircle } from 'lucide-react';
+import FeatureTour from './FeatureTour';
 import { generateHoles } from '../utils/golfLogic';
 import { supabase } from '../lib/supabase';
 import { GameType } from '../types/golf';
@@ -28,7 +29,22 @@ export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourse
   const [showFamousCoursesDialog, setShowFamousCoursesDialog] = useState(false);
   const [multiplayerMode, setMultiplayerMode] = useState<'create' | 'join' | null>(null);
   const [holeCount, setHoleCount] = useState<3 | 9 | 18>(9);
+  const [showTour, setShowTour] = useState(false);
   const [courseName, setCourseName] = useState('');
+
+  // Check if user has seen the tour
+  useEffect(() => {
+    const hasSeenTour = localStorage.getItem('hasSeenTour');
+    if (!hasSeenTour) {
+      const timer = setTimeout(() => setShowTour(true), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  const handleCloseTour = () => {
+    setShowTour(false);
+    localStorage.setItem('hasSeenTour', 'true');
+  };
   const [joinCode, setJoinCode] = useState('');
   const [shareCode, setShareCode] = useState<string | null>(null);
   const [pendingCourseId, setPendingCourseId] = useState<string | null>(null);
@@ -210,6 +226,7 @@ export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourse
 
   return (
     <div className="min-h-screen bg-topo flex items-center justify-center px-4 py-8">
+      <FeatureTour isOpen={showTour} onClose={handleCloseTour} />
       <div className="max-w-md w-full">
         <div className="text-center mb-10 relative">
           <div className="absolute top-0 left-1/4 w-2 h-2 bg-emerald-400 rounded-full animate-ping"></div>
@@ -262,6 +279,14 @@ export default function SetupScreen({ onOpenProfile, onOpenHistory, onOpenCourse
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-bold text-white">Get Started</h2>
             <div className="flex gap-2">
+              <button
+                onClick={() => setShowTour(true)}
+                className="p-2.5 bg-slate-800/50 rounded-xl hover:bg-slate-700/50 transition-all border border-slate-700/50 backdrop-blur-sm"
+                title="App Feature Tour"
+                aria-label="App feature tour"
+              >
+                <HelpCircle className="w-5 h-5 text-slate-400" aria-hidden="true" />
+              </button>
               <button
                 onClick={onOpenLeaderboard}
                 className="p-2.5 bg-amber-500/20 rounded-xl hover:bg-amber-500/30 transition-all border border-amber-500/30"
