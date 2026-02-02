@@ -1,14 +1,14 @@
 import { useState } from 'react';
-import { Lock, User, UserPlus, KeyRound, ArrowLeft, Shield, HelpCircle, Clock, Mail } from 'lucide-react';
+import { Lock, User, UserPlus, KeyRound, ArrowLeft, Shield, HelpCircle, Clock, Mail, Target, Trophy, TrendingUp } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { validateUsername, validatePin } from '../utils/validation';
 import { supabase } from '../lib/supabase';
 
-type AuthMode = 'login' | 'signup' | 'recovery-choice' | 'recovery-pin' | 'recovery-username' | 'recovery-question' | 'recovery-newpin' | 'recovery-show-username';
+type AuthMode = 'landing' | 'login' | 'signup' | 'recovery-choice' | 'recovery-pin' | 'recovery-username' | 'recovery-question' | 'recovery-newpin' | 'recovery-show-username';
 
 export function AuthScreen() {
   const { login, signup, continueAsGuest } = useAuth();
-  const [mode, setMode] = useState<AuthMode>('login');
+  const [mode, setMode] = useState<AuthMode>('landing');
   const [username, setUsername] = useState('');
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
@@ -252,6 +252,12 @@ export function AuthScreen() {
     setMode(mode === 'signup' ? 'login' : 'signup');
     resetState();
     setSuccessMessage('');
+  };
+
+  const handleBackToLanding = () => {
+    setMode('landing');
+    resetState();
+    setError('');
   };
 
   // Recovery Choice Screen
@@ -560,13 +566,12 @@ export function AuthScreen() {
                 {[0, 1, 2, 3, 4, 5].map((i) => (
                   <div
                     key={i}
-                    className={`w-12 h-12 border-2 rounded-lg flex items-center justify-center transition-colors ${
-                      pin[i]
+                    className={`w-12 h-12 border-2 rounded-lg flex items-center justify-center transition-colors ${pin[i]
                         ? 'border-emerald-500 bg-emerald-500/20'
                         : i < 4
-                        ? 'border-slate-600 bg-slate-800'
-                        : 'border-slate-700 bg-slate-900'
-                    }`}
+                          ? 'border-slate-600 bg-slate-800'
+                          : 'border-slate-700 bg-slate-900'
+                      }`}
                   >
                     {pin[i] && (
                       <Lock className="w-5 h-5 text-emerald-400" />
@@ -624,8 +629,15 @@ export function AuthScreen() {
   // Login / Signup
   return (
     <div className="min-h-screen bg-topo flex items-center justify-center p-4">
-      <div className="bg-slate-800/90 backdrop-blur-sm rounded-2xl border border-slate-700 p-8 w-full max-w-md">
-        <div className="text-center mb-8">
+      <div className="bg-slate-800/90 backdrop-blur-sm rounded-2xl border border-slate-700 p-8 w-full max-w-md relative">
+        <button
+          onClick={handleBackToLanding}
+          className="absolute top-6 left-6 p-2 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-lg transition-colors"
+          title="Back to Home"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+        <div className="text-center mb-8 pt-4">
           <h1 className="text-3xl font-bold text-emerald-400 mb-1">Range Rounds</h1>
           <div className="inline-block p-3 bg-emerald-500/20 rounded-full my-4 border border-emerald-500/30">
             {mode === 'signup' ? (
@@ -675,13 +687,12 @@ export function AuthScreen() {
               {[0, 1, 2, 3, 4, 5].map((i) => (
                 <div
                   key={i}
-                  className={`w-12 h-12 border-2 rounded-lg flex items-center justify-center transition-colors ${
-                    pin[i]
+                  className={`w-12 h-12 border-2 rounded-lg flex items-center justify-center transition-colors ${pin[i]
                       ? 'border-emerald-500 bg-emerald-500/20'
                       : i < 4
-                      ? 'border-slate-600 bg-slate-800'
-                      : 'border-slate-700 bg-slate-900'
-                  }`}
+                        ? 'border-slate-600 bg-slate-800'
+                        : 'border-slate-700 bg-slate-900'
+                    }`}
                 >
                   {pin[i] && (
                     <Lock className="w-5 h-5 text-emerald-400" />
@@ -773,19 +784,6 @@ export function AuthScreen() {
           </div>
 
           <div className="mt-6 pt-6 border-t border-slate-700">
-            <button
-              onClick={continueAsGuest}
-              disabled={isLoading}
-              className="w-full p-3 bg-slate-700/50 hover:bg-slate-700 border border-slate-600 rounded-lg transition-colors"
-            >
-              <div className="flex items-center justify-center gap-2 text-slate-300">
-                <Clock className="w-4 h-4" />
-                <span className="font-medium">Continue as Guest</span>
-              </div>
-              <p className="text-xs text-slate-500 mt-1">
-                Try it out - data expires in 1 hour and won't be saved
-              </p>
-            </button>
           </div>
         </div>
       </div>
