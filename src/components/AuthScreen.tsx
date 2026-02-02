@@ -645,8 +645,8 @@ export function AuthScreen() {
                 <Target className="w-5 h-5 text-emerald-400" />
               </div>
               <div className="text-left">
-                <h3 className="text-white font-semibold">Track Every Shot</h3>
-                <p className="text-sm text-slate-400">Record yardages and clubs used</p>
+                <h3 className="text-white font-semibold">Play Virtual Holes</h3>
+                <p className="text-sm text-slate-400">Simulate real rounds on the range</p>
               </div>
             </div>
 
