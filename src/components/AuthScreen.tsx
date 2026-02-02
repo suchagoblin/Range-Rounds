@@ -567,10 +567,10 @@ export function AuthScreen() {
                   <div
                     key={i}
                     className={`w-12 h-12 border-2 rounded-lg flex items-center justify-center transition-colors ${pin[i]
-                        ? 'border-emerald-500 bg-emerald-500/20'
-                        : i < 4
-                          ? 'border-slate-600 bg-slate-800'
-                          : 'border-slate-700 bg-slate-900'
+                      ? 'border-emerald-500 bg-emerald-500/20'
+                      : i < 4
+                        ? 'border-slate-600 bg-slate-800'
+                        : 'border-slate-700 bg-slate-900'
                       }`}
                   >
                     {pin[i] && (
@@ -620,6 +620,83 @@ export function AuthScreen() {
                 <p className="text-sm text-red-400 text-center">{error}</p>
               </div>
             )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Landing Screen
+  if (mode === 'landing') {
+    return (
+      <div className="min-h-screen bg-topo flex items-center justify-center p-4">
+        <div className="bg-slate-800/90 backdrop-blur-sm rounded-2xl border border-slate-700 p-8 w-full max-w-md">
+          <div className="text-center mb-10">
+            <div className="inline-block p-4 bg-emerald-500/20 rounded-full mb-6 border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+              <Target className="w-12 h-12 text-emerald-400" />
+            </div>
+            <h1 className="text-4xl font-bold text-white mb-3 tracking-tight">Range Rounds</h1>
+            <p className="text-lg text-emerald-400 font-medium">Master Your Golf Game</p>
+          </div>
+
+          <div className="space-y-4 mb-10">
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-700/30 border border-slate-700/50">
+              <div className="p-2 bg-emerald-500/10 rounded-lg">
+                <Target className="w-5 h-5 text-emerald-400" />
+              </div>
+              <div className="text-left">
+                <h3 className="text-white font-semibold">Track Every Shot</h3>
+                <p className="text-sm text-slate-400">Record yardages and clubs used</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-700/30 border border-slate-700/50">
+              <div className="p-2 bg-amber-500/10 rounded-lg">
+                <TrendingUp className="w-5 h-5 text-amber-400" />
+              </div>
+              <div className="text-left">
+                <h3 className="text-white font-semibold">Improve With Drills</h3>
+                <p className="text-sm text-slate-400">Library of training exercises</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-700/30 border border-slate-700/50">
+              <div className="p-2 bg-violet-500/10 rounded-lg">
+                <Trophy className="w-5 h-5 text-violet-400" />
+              </div>
+              <div className="text-left">
+                <h3 className="text-white font-semibold">Compete & Rank</h3>
+                <p className="text-sm text-slate-400">Join the community leaderboard</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <button
+              onClick={continueAsGuest}
+              className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white rounded-xl font-bold text-lg shadow-lg hover:shadow-emerald-500/25 transition-all flex items-center justify-center gap-2 group"
+            >
+              <Clock className="w-5 h-5 group-hover:scale-110 transition-transform" />
+              Try as Guest
+            </button>
+
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <button
+                onClick={() => setMode('login')}
+                className="py-3 px-4 bg-slate-700/50 hover:bg-slate-700 text-white rounded-xl font-semibold transition-colors border border-slate-600"
+              >
+                Sign In
+              </button>
+              <button
+                onClick={() => setMode('signup')}
+                className="py-3 px-4 bg-slate-700/50 hover:bg-slate-700 text-white rounded-xl font-semibold transition-colors border border-slate-600"
+              >
+                Create Account
+              </button>
+            </div>
+            <p className="text-xs text-slate-500 text-center pt-2">
+              Guest data is temporary and expires in 1 hour
+            </p>
           </div>
         </div>
       </div>
@@ -688,10 +765,10 @@ export function AuthScreen() {
                 <div
                   key={i}
                   className={`w-12 h-12 border-2 rounded-lg flex items-center justify-center transition-colors ${pin[i]
-                      ? 'border-emerald-500 bg-emerald-500/20'
-                      : i < 4
-                        ? 'border-slate-600 bg-slate-800'
-                        : 'border-slate-700 bg-slate-900'
+                    ? 'border-emerald-500 bg-emerald-500/20'
+                    : i < 4
+                      ? 'border-slate-600 bg-slate-800'
+                      : 'border-slate-700 bg-slate-900'
                     }`}
                 >
                   {pin[i] && (
